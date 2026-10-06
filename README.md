@@ -78,10 +78,11 @@ This project is 100% static and configured for instant zero-configuration deploy
 2. Navigate to **Workers & Pages** → **Create application** → **Pages** → **Connect to Git**.
 3. Select your GitHub repository (`ali-web-studio`).
 4. In the **Build configuration** settings:
-   - **Framework preset**: `Vite` (or `React (Vite)`)
+   - **Framework preset**: `React (Vite)`
    - **Build command**: `npm run build`
    - **Build output directory**: `dist`
    - **Root directory**: *(leave blank)*
+   - **Node version**: `22` (configured via `.nvmrc` in repository root, or Environment Variable `NODE_VERSION` = `22`)
 5. Click **Save and Deploy**.
 
 ### Step 2: Connect your Custom Domain (e.g. aliwebstudio.co)
