@@ -187,8 +187,8 @@ export const siteConfig = {
       category: "Culinary & Dining",
       tagline: "Artisanal Fine Dining Experience",
       description: "Premium restaurant website concept with food-focused visuals, interactive seasonal menu presentation, and modern bistro experience.",
-      url: "", // Placeholder URL until deployment URL is added
-      hasLiveDemo: false,
+      url: "https://flavourz-restaurant-demo.netlify.app/",
+      hasLiveDemo: true,
       image: flavorsRestaurantImg,
       tags: ["Editorial Mood", "Interactive Menu", "Visual Storytelling"],
       deliverables: ["Atmospheric Dark UI", "Digital Menu Layout", "Table Reservation Hook", "Mobile First"],

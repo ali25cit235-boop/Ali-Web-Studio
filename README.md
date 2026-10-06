@@ -11,7 +11,7 @@ A high-end personal agency portfolio website for **Ali Web Studio**, an independ
 - **Main Studio**: [Ali Web Studio](https://aliwebstudio.co) (Preview)
 - **Apex Auto Detailing**: [Live Demo](https://apex-auto-detailing-demo.pages.dev/)
 - **Lumiere Dental Demo**: [Live Demo](https://ali25cit235-boop.github.io/Lumiere-Dental-Demo/)
-- **FLAVORS Restaurant**: Concept preview ready for review
+- **FLAVORS Restaurant**: [Live Demo](https://flavourz-restaurant-demo.netlify.app/)
 
 ---
 
