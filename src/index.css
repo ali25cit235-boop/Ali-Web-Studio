@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  html {
+    scroll-behavior: smooth;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+  body {
+    background-color: #07090e;
+    color: #cbd5e1;
+    overflow-x: hidden;
+  }
+  ::selection {
+    background-color: rgba(99, 102, 241, 0.35);
+    color: #ffffff;
+  }
+}
+
+/* Custom typography classes */
+.font-display {
+  font-family: 'Syne', sans-serif;
+}
+.font-sans {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Atmospheric subtle grid background */
+.bg-grid-pattern {
+  background-size: 48px 48px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+.bg-dot-pattern {
+  background-size: 24px 24px;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+}
+
+/* Glass card styling */
+.glass-panel {
+  background: rgba(13, 17, 26, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glass-panel-hover:hover {
+  background: rgba(18, 24, 38, 0.85);
+  border-color: rgba(129, 140, 248, 0.25);
+  box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.15);
+}
+
+/* Ambient glow highlights */
+.glow-primary {
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0) 70%);
+}
+
+.glow-purple {
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.12) 0%, rgba(168, 85, 247, 0) 70%);
+}
+
+.glow-cyan {
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, rgba(56, 189, 248, 0) 70%);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #07090e;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-delay: -1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    background-attachment: initial !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+  }
+}
