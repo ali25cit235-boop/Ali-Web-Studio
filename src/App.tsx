@@ -1,99 +1,155 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import { useState } from 'react';
 import CustomCursor from './components/CustomCursor';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
-import TrustStrip from './components/TrustStrip';
-import About from './components/About';
-import Stats from './components/Stats';
-import Services from './components/Services';
-import Portfolio from './components/Portfolio';
-import ResultsPillars from './components/ResultsPillars';
-import Process from './components/Process';
-import WhyChoose from './components/WhyChoose';
-import SocialProof from './components/SocialProof';
-import CTA from './components/CTA';
-import Contact from './components/Contact';
+import ProblemsSection from './components/ProblemsSection';
+import VoiceServices from './components/VoiceServices';
+import HowItWorks from './components/HowItWorks';
+import SolutionFinder from './components/SolutionFinder';
+import WebsiteDevSection from './components/WebsiteDevSection';
+import DemoGallery from './components/DemoGallery';
+import FutureVoiceDemo from './components/FutureVoiceDemo';
+import WhyAliAI from './components/WhyAliAI';
+import FAQSection from './components/FAQSection';
+import ContactSection from './components/ContactSection';
 import Footer from './components/Footer';
 import WhatsAppModal from './components/WhatsAppModal';
 import ProjectModal from './components/ProjectModal';
-import { ProjectItem } from './data/siteConfig';
+import { WebsiteDemoItem, siteConfig } from './data/siteConfig';
 
 export default function App() {
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<ProjectItem | null>(null);
+  const [selectedDemo, setSelectedDemo] = useState<WebsiteDemoItem | null>(null);
 
-  const scrollToContact = () => {
+  // States to pre-fill the contact form based on user actions in other sections
+  const [preselectedService, setPreselectedService] = useState<string>('AI Voice Agent');
+  const [preselectedBusinessType, setPreselectedBusinessType] = useState<string>('');
+
+  const scrollToContact = (service?: string, bizType?: string) => {
+    if (service) setPreselectedService(service);
+    if (bizType) setPreselectedBusinessType(bizType);
+
     const el = document.getElementById('contact');
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+      const navOffset = 80;
+      const elementPosition = el.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  const scrollToDemos = () => {
+    const el = document.getElementById('demos');
+    if (el) {
+      const navOffset = 80;
+      const elementPosition = el.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  const scrollToSolutionFinder = () => {
+    const el = document.getElementById('solution-finder');
+    if (el) {
+      const navOffset = 80;
+      const elementPosition = el.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  const handlePreviewDemoById = (demoId: string) => {
+    const found = siteConfig.websiteDemos.find((d) => d.id === demoId);
+    if (found) {
+      setSelectedDemo(found);
+    } else {
+      scrollToDemos();
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-slate-200 selection:bg-indigo-500/30 selection:text-white font-sans relative">
+    <div className="min-h-screen bg-[#080B14] text-slate-200 selection:bg-blue-500/30 selection:text-white font-sans relative antialiased">
       {/* Subtle desktop interactive cursor */}
       <CustomCursor />
 
-      {/* Primary Sticky Navigation */}
-      <Navbar onOpenWhatsApp={() => setIsWhatsAppModalOpen(true)} />
+      {/* Section A: Primary Sticky Navigation */}
+      <Navbar
+        onOpenWhatsApp={() => setIsWhatsAppModalOpen(true)}
+        onContactClick={(service) => scrollToContact(service)}
+      />
 
       {/* Main Content Landmark */}
       <main id="main-content">
-        {/* Fullscreen Hero Section */}
-        <Hero />
+        {/* Section B: Hero Section */}
+        <Hero onContactClick={() => scrollToContact()} />
 
-        {/* Trust & Capability Strip */}
-        <TrustStrip />
+        {/* Section C: Problem & Value Proposition */}
+        <ProblemsSection onSolutionFinderClick={scrollToSolutionFinder} />
 
-        {/* Editorial About Studio Section */}
-        <About />
+        {/* Section D: AI Voice Agent Services (Primary) */}
+        <VoiceServices onSelectService={(service) => scrollToContact(service)} />
 
-        {/* Honest Portfolio-Based Stats */}
-        <Stats />
+        {/* Section E: How It Works */}
+        <HowItWorks />
 
-        {/* Core Services Section */}
-        <Services />
+        {/* Section F: Business-Specific Solution Finder */}
+        <SolutionFinder
+          onDiscussSolution={(bizType, goal) => scrollToContact(goal, bizType)}
+          onPreviewDemo={handlePreviewDemoById}
+        />
 
-        {/* Selected Work Portfolio Showcase */}
-        <Portfolio onSelectProject={(project) => setSelectedProject(project)} />
+        {/* Section G: Website Development */}
+        <WebsiteDevSection onExploreDemos={scrollToDemos} />
 
-        {/* Results Pillars Showcase */}
-        <ResultsPillars />
+        {/* Section H: Website Demo Gallery */}
+        <DemoGallery
+          onSelectDemo={(demo) => setSelectedDemo(demo)}
+          onRequestSimilar={(title) => scrollToContact(`Website: Similar to ${title}`)}
+        />
 
-        {/* How I Work Methodology */}
-        <Process />
+        {/* Section I: Future Voice Agent Demo Area */}
+        <FutureVoiceDemo />
 
-        {/* Why Work With Me Section */}
-        <WhyChoose />
+        {/* Section J: Why Ali AI Solutions */}
+        <WhyAliAI />
 
-        {/* Honest Social Proof / Portfolio Builder */}
-        <SocialProof onStartProject={scrollToContact} />
+        {/* Section K: Frequently Asked Questions */}
+        <FAQSection />
 
-        {/* High-Intent Conversion CTA */}
-        <CTA onOpenWhatsApp={() => setIsWhatsAppModalOpen(true)} />
-
-        {/* Full Contact Channels & Inquiry Form */}
-        <Contact onOpenWhatsApp={() => setIsWhatsAppModalOpen(true)} />
+        {/* Section L: Contact & Project Enquiry Form */}
+        <ContactSection
+          preselectedService={preselectedService}
+          preselectedBusinessType={preselectedBusinessType}
+          onOpenWhatsApp={() => setIsWhatsAppModalOpen(true)}
+        />
       </main>
 
-      {/* Studio Footer */}
-      <Footer onOpenWhatsApp={() => setIsWhatsAppModalOpen(true)} />
+      {/* Clean Quiet Footer */}
+      <Footer />
 
-      {/* Modals */}
+      {/* WhatsApp Modal Dialog */}
       <WhatsAppModal
         isOpen={isWhatsAppModalOpen}
         onClose={() => setIsWhatsAppModalOpen(false)}
       />
 
+      {/* Project / Demo Preview Modal */}
       <ProjectModal
-        project={selectedProject}
-        onClose={() => setSelectedProject(null)}
-        onContactClick={scrollToContact}
+        demo={selectedDemo}
+        onClose={() => setSelectedDemo(null)}
+        onContactClick={(title) => {
+          setSelectedDemo(null);
+          scrollToContact(title ? `Website Demo: ${title}` : 'Website Development');
+        }}
       />
     </div>
   );

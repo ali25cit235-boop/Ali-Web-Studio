@@ -1,133 +1,181 @@
-import { ArrowUp, Instagram, Send, Mail, MessageSquare } from 'lucide-react';
-import { siteConfig } from '../data/siteConfig';
+import { Phone, Mail, MessageCircle, ArrowUp } from 'lucide-react';
 import BrandLogo from './BrandLogo';
+import { siteConfig } from '../data/siteConfig';
 
-interface FooterProps {
-  onOpenWhatsApp: () => void;
-}
-
-export default function Footer({ onOpenWhatsApp }: FooterProps) {
-  const currentYear = new Date().getFullYear();
-
+export default function Footer() {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    e.preventDefault();
-    const id = href.replace('#', '');
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+  const scrollTo = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      const navOffset = 80;
+      const elementPosition = el.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth',
+      });
     }
   };
 
   return (
-    <footer className="relative bg-[#05070c] border-t border-white/[0.08] pt-16 pb-12 text-slate-400 text-left">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 pb-12 border-b border-white/[0.06]">
-          {/* Brand info */}
-          <div className="lg:col-span-5 space-y-4">
+    <footer className="bg-[#05080F] border-t border-white/[0.08] text-slate-400 text-xs">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10">
+          
+          {/* Col 1 (5 cols): Brand Information */}
+          <div className="lg:col-span-5 space-y-4 text-left">
             <BrandLogo size="md" />
-
-            <p className="text-sm text-slate-400 max-w-sm leading-relaxed">
-              Modern websites for modern businesses. Creating high-performance digital presences tailored for ambitious brands.
+            <p className="text-slate-400 text-sm leading-relaxed max-w-sm pt-2">
+              {siteConfig.brand.supportingStatement}
             </p>
-
-            <div className="pt-2 text-xs text-slate-400 font-mono">
-              {siteConfig.brand.type}
+            <div className="text-xs text-slate-500 font-mono">
+              Empowering local brands &amp; growing enterprises through practical conversational AI.
             </div>
           </div>
 
-          {/* Quick Navigation */}
-          <div className="lg:col-span-3 space-y-3">
-            <h4 className="text-xs font-mono uppercase tracking-wider text-slate-300">
-              Navigation
+          {/* Col 2 (3 cols): Primary Solutions */}
+          <div className="lg:col-span-3 space-y-3 text-left">
+            <h4 className="text-xs font-mono uppercase tracking-wider text-white font-semibold">
+              AI Solutions
             </h4>
-            <ul className="space-y-2 text-sm">
-              {siteConfig.navigation.map((item) => (
-                <li key={item.label}>
-                  <a
-                    href={item.href}
-                    onClick={(e) => handleNavClick(e, item.href)}
-                    className="hover:text-white transition-colors"
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ))}
+            <ul className="space-y-2 text-xs">
+              <li>
+                <button
+                  onClick={() => scrollTo('voice-agents')}
+                  className="hover:text-blue-400 transition-colors cursor-pointer"
+                >
+                  AI Receptionist
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => scrollTo('voice-agents')}
+                  className="hover:text-blue-400 transition-colors cursor-pointer"
+                >
+                  Lead Capture Voice Agent
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => scrollTo('voice-agents')}
+                  className="hover:text-blue-400 transition-colors cursor-pointer"
+                >
+                  Appointment Enquiry Assistant
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => scrollTo('voice-agents')}
+                  className="hover:text-blue-400 transition-colors cursor-pointer"
+                >
+                  After-Hours Call Assistant
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => scrollTo('solution-finder')}
+                  className="hover:text-blue-400 transition-colors cursor-pointer"
+                >
+                  Industry Solution Finder
+                </button>
+              </li>
             </ul>
           </div>
 
-          {/* Connect / Socials */}
-          <div className="lg:col-span-4 space-y-3">
-            <h4 className="text-xs font-mono uppercase tracking-wider text-slate-300">
-              Connect
+          {/* Col 3 (2 cols): Websites & Agency */}
+          <div className="lg:col-span-2 space-y-3 text-left">
+            <h4 className="text-xs font-mono uppercase tracking-wider text-white font-semibold">
+              Digital Studio
             </h4>
-            <div className="space-y-2 text-sm">
-              <div>
-                <a
-                  href={siteConfig.contact.emailMailto}
-                  className="hover:text-white transition-colors flex items-center gap-2"
+            <ul className="space-y-2 text-xs">
+              <li>
+                <button
+                  onClick={() => scrollTo('websites')}
+                  className="hover:text-blue-400 transition-colors cursor-pointer"
                 >
-                  <Mail className="w-4 h-4 text-indigo-400 shrink-0" />
-                  <span>{siteConfig.contact.email}</span>
-                </a>
-              </div>
-              <div>
-                <a
-                  href={siteConfig.contact.instagramUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-white transition-colors flex items-center gap-2"
+                  Website Development
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => scrollTo('demos')}
+                  className="hover:text-blue-400 transition-colors cursor-pointer"
                 >
-                  <Instagram className="w-4 h-4 text-pink-400 shrink-0" />
-                  <span>{siteConfig.contact.instagramHandle}</span>
-                </a>
-              </div>
-              <div>
-                <a
-                  href={siteConfig.contact.telegramUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-white transition-colors flex items-center gap-2"
+                  Website Demo Gallery
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => scrollTo('about')}
+                  className="hover:text-blue-400 transition-colors cursor-pointer"
                 >
-                  <Send className="w-4 h-4 text-sky-400 shrink-0" />
-                  <span>{siteConfig.contact.telegramHandle}</span>
-                </a>
-              </div>
-              <div>
-                <a
-                  href={siteConfig.contact.whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-white transition-colors flex items-center gap-2 text-left"
+                  Core Principles
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => scrollTo('faqs')}
+                  className="hover:text-blue-400 transition-colors cursor-pointer"
                 >
-                  <MessageSquare className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>{siteConfig.contact.whatsappDisplay}</span>
-                </a>
-              </div>
+                  Frequently Asked Questions
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* Col 4 (2 cols): Quick Contact */}
+          <div className="lg:col-span-2 space-y-3 text-left">
+            <h4 className="text-xs font-mono uppercase tracking-wider text-white font-semibold">
+              Direct Contact
+            </h4>
+            <div className="space-y-2 text-xs">
+              <a
+                href={siteConfig.contact.whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 hover:text-emerald-400 transition-colors"
+              >
+                <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                <span>WhatsApp</span>
+              </a>
+              <a
+                href={siteConfig.contact.emailMailto}
+                className="flex items-center gap-2 hover:text-blue-400 transition-colors"
+              >
+                <Mail className="w-3.5 h-3.5 text-blue-400" />
+                <span>Email Us</span>
+              </a>
+              <a
+                href={siteConfig.contact.telegramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 hover:text-sky-400 transition-colors"
+              >
+                <MessageCircle className="w-3.5 h-3.5 text-sky-400" />
+                <span>Telegram</span>
+              </a>
             </div>
           </div>
+
         </div>
 
-        {/* Bottom row */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+        {/* Bottom Bar: Copyright & Back to Top */}
+        <div className="mt-12 pt-8 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div>
-            © {currentYear} {siteConfig.brand.name}. All rights reserved.
+            &copy; {new Date().getFullYear()} {siteConfig.brand.name}. All rights reserved. Professional AI voice agent engineering.
           </div>
 
-          <div className="flex items-center gap-6">
-            <span>Independent web design & development studio.</span>
-            <button
-              onClick={scrollToTop}
-              className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
-              aria-label="Scroll to top"
-              title="Back to top"
-            >
-              <ArrowUp className="w-4 h-4" />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={scrollToTop}
+            className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors cursor-pointer"
+          >
+            <span>Back to top</span>
+            <ArrowUp className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
     </footer>

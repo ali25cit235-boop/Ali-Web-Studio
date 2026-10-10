@@ -1,177 +1,164 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ArrowUpRight } from 'lucide-react';
-import { siteConfig } from '../data/siteConfig';
+import { Menu, X, ArrowUpRight, PhoneCall } from 'lucide-react';
 import BrandLogo from './BrandLogo';
+import { siteConfig } from '../data/siteConfig';
 
 interface NavbarProps {
   onOpenWhatsApp: () => void;
+  onContactClick: (servicePreselect?: string) => void;
 }
 
-export default function Navbar({ onOpenWhatsApp }: NavbarProps) {
+export default function Navbar({ onOpenWhatsApp, onContactClick }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState('hero');
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-
-      const sections = ['hero', 'about', 'services', 'work', 'process', 'why-us', 'contact'];
-      const scrollPosition = window.scrollY + 140;
-
-      for (const sectionId of sections) {
-        const el = document.getElementById(sectionId);
-        if (el) {
-          const top = el.offsetTop;
-          const height = el.offsetHeight;
-          if (scrollPosition >= top && scrollPosition < top + height) {
-            setActiveSection(sectionId);
-            break;
-          }
-        }
-      }
+      setIsScrolled(window.scrollY > 24);
     };
-
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    e.preventDefault();
+  const scrollTo = (id: string) => {
     setMobileMenuOpen(false);
-    const targetId = href.replace('#', '');
-    const element = document.getElementById(targetId);
+    const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      const navOffset = 80;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth',
+      });
     }
   };
 
+  const navLinks = [
+    { label: "Home", id: "hero" },
+    { label: "AI Voice Agents", id: "voice-agents" },
+    { label: "Solutions", id: "solution-finder" },
+    { label: "Website Development", id: "websites" },
+    { label: "Demos", id: "demos" },
+    { label: "About", id: "about" },
+    { label: "Contact", id: "contact" },
+  ];
+
   return (
-    <>
-      <header
-        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-          isScrolled
-            ? 'bg-[#07090e]/85 backdrop-blur-xl border-b border-white/[0.08] shadow-lg shadow-black/40 py-3.5'
-            : 'bg-transparent py-5 sm:py-6'
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            {/* Zone 1: Single text element wordmark with authentic circular logo */}
-            <a
-              href="#hero"
-              onClick={(e) => handleNavClick(e, '#hero')}
-              className="group flex items-center focus:outline-none"
-              aria-label="Ali Web Studio Home"
-            >
-              <BrandLogo size="md" />
-            </a>
+    <header
+      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+        isScrolled
+          ? 'bg-[#080B14]/90 backdrop-blur-md border-b border-white/[0.08] py-3.5 shadow-lg shadow-black/40'
+          : 'bg-transparent py-5 border-b border-transparent'
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between gap-8">
+          {/* Zone 1: Brand Wordmark */}
+          <a
+            href="#hero"
+            onClick={(e) => {
+              e.preventDefault();
+              scrollTo('hero');
+            }}
+            className="group focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg shrink-0"
+            aria-label="Ali AI Solutions — Home"
+          >
+            <BrandLogo size="md" />
+          </a>
 
-            {/* Zone 2: 4-6 clean text navigation links */}
-            <nav className="hidden md:flex items-center gap-8">
-              {siteConfig.navigation.map((item) => {
-                const isActive = activeSection === item.href.replace('#', '');
-                return (
-                  <a
-                    key={item.label}
-                    href={item.href}
-                    onClick={(e) => handleNavClick(e, item.href)}
-                    className={`relative text-sm font-medium transition-colors py-1 ${
-                      isActive ? 'text-white' : 'text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    {item.label}
-                    {isActive && (
-                      <motion.div
-                        layoutId="navIndicator"
-                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-sky-400 rounded-full"
-                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                      />
-                    )}
-                  </a>
-                );
-              })}
-            </nav>
-
-            {/* Zone 3: 1-2 primary actions */}
-            <div className="hidden md:flex items-center gap-4">
-              <a
-                href="#contact"
-                onClick={(e) => handleNavClick(e, '#contact')}
-                className="relative inline-flex items-center justify-center px-4 py-2 text-xs font-semibold text-white bg-gradient-to-r from-indigo-600 to-indigo-500 rounded-lg shadow-sm hover:from-indigo-500 hover:to-indigo-400 transition-all duration-200 hover:shadow-indigo-500/25 hover:shadow-md active:scale-95 whitespace-nowrap"
-              >
-                <span>Let's Talk</span>
-                <ArrowUpRight className="w-3.5 h-3.5 ml-1.5 opacity-80" />
-              </a>
-            </div>
-
-            {/* Mobile menu toggle button */}
-            <div className="flex md:hidden items-center gap-2">
-              <a
-                href="#contact"
-                onClick={(e) => handleNavClick(e, '#contact')}
-                className="px-3 py-1.5 text-xs font-medium text-white bg-indigo-600/90 rounded-md"
-              >
-                Let's Talk
-              </a>
+          {/* Zone 2: Desktop Navigation Links (Clean single-line typography) */}
+          <nav className="hidden lg:flex items-center gap-7 text-sm font-medium text-slate-300" aria-label="Main Navigation">
+            {navLinks.map((link) => (
               <button
-                type="button"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 text-slate-300 hover:text-white rounded-lg bg-white/5 border border-white/10"
-                aria-expanded={mobileMenuOpen}
-                aria-label="Toggle navigation menu"
+                key={link.id}
+                onClick={() => scrollTo(link.id)}
+                className="hover:text-white transition-colors cursor-pointer whitespace-nowrap shrink-0 relative py-1 focus:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 rounded"
               >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {link.label}
               </button>
-            </div>
+            ))}
+          </nav>
+
+          {/* Zone 3: Primary Action & Quick WhatsApp Trigger */}
+          <div className="hidden sm:flex items-center gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={onOpenWhatsApp}
+              className="p-2.5 rounded-xl text-slate-300 hover:text-emerald-400 hover:bg-emerald-500/10 border border-white/5 hover:border-emerald-500/30 transition-all cursor-pointer"
+              title="Quick WhatsApp Inquiry"
+              aria-label="Open WhatsApp conversation"
+            >
+              <PhoneCall className="w-4 h-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onContactClick()}
+              className="px-5 py-2.5 text-xs font-semibold text-white bg-gradient-to-r from-[#4F8CFF] to-[#8B5CF6] hover:from-[#3B7CFF] hover:to-[#7C3AED] rounded-xl shadow-md shadow-blue-500/20 hover:shadow-blue-500/30 transition-all cursor-pointer whitespace-nowrap active:scale-95 flex items-center gap-1.5"
+            >
+              <span>Discuss Your Project</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Mobile Menu Toggle Button */}
+          <div className="flex items-center gap-2 lg:hidden">
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2.5 rounded-xl text-slate-300 hover:text-white bg-white/5 border border-white/10 transition-colors cursor-pointer"
+              aria-expanded={mobileMenuOpen}
+              aria-label="Toggle navigation menu"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
         </div>
-      </header>
+      </div>
 
-      {/* Mobile navigation overlay drawer */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-x-0 top-[60px] z-30 bg-[#0a0d17]/95 backdrop-blur-2xl border-b border-white/10 p-6 md:hidden shadow-2xl shadow-black/80"
-          >
-            <div className="flex flex-col space-y-4">
-              {siteConfig.navigation.map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  onClick={(e) => handleNavClick(e, item.href)}
-                  className="text-base font-medium text-slate-200 hover:text-indigo-400 transition-colors py-2 border-b border-white/5"
-                >
-                  {item.label}
-                </a>
-              ))}
-              <div className="pt-2 flex flex-col gap-3">
-                <a
-                  href="#contact"
-                  onClick={(e) => handleNavClick(e, '#contact')}
-                  className="w-full py-2.5 text-center text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors"
-                >
-                  Let's Talk
-                </a>
-                <a
-                  href={siteConfig.contact.whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-2.5 text-center text-sm font-medium text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-lg border border-emerald-500/25 transition-colors flex items-center justify-center gap-2"
-                >
-                  <span>Chat on WhatsApp ({siteConfig.contact.whatsappDisplay})</span>
-                </a>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+      {/* Mobile Drawer Menu */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden bg-[#0A0E1A] border-b border-white/10 px-6 py-6 space-y-4 animate-in slide-in-from-top-4 duration-200">
+          <nav className="flex flex-col space-y-3" aria-label="Mobile Navigation">
+            {navLinks.map((link) => (
+              <button
+                key={link.id}
+                onClick={() => scrollTo(link.id)}
+                className="text-left text-base font-medium text-slate-200 hover:text-blue-400 py-2 border-b border-white/5 transition-colors cursor-pointer"
+              >
+                {link.label}
+              </button>
+            ))}
+          </nav>
+
+          <div className="pt-2 flex flex-col gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onContactClick();
+              }}
+              className="w-full py-3 rounded-xl text-center text-sm font-semibold text-white bg-gradient-to-r from-[#4F8CFF] to-[#8B5CF6] shadow-md shadow-blue-500/25 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>Discuss Your Project</span>
+              <ArrowUpRight className="w-4 h-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenWhatsApp();
+              }}
+              className="w-full py-2.5 rounded-xl text-center text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <PhoneCall className="w-3.5 h-3.5" />
+              <span>WhatsApp Direct Chat</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </header>
   );
 }

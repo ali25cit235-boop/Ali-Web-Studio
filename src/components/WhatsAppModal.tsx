@@ -36,7 +36,7 @@ export default function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-md bg-[#0c101b] border border-white/10 rounded-2xl p-6 sm:p-7 shadow-2xl shadow-indigo-950/40 text-left z-10"
+            className="relative w-full max-w-md bg-[#0D1220] border border-white/10 rounded-2xl p-6 sm:p-7 shadow-2xl shadow-blue-950/40 text-left z-10"
           >
             {/* Close button */}
             <button
@@ -54,7 +54,7 @@ export default function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-white font-display">
-                  WhatsApp Inquiries
+                  WhatsApp Direct Inquiry
                 </h3>
                 <p className="text-xs text-emerald-400 font-mono">
                   {siteConfig.contact.whatsappDisplay}
@@ -63,7 +63,7 @@ export default function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
             </div>
 
             <p className="text-sm text-slate-300 mb-6 leading-relaxed">
-              Reach out directly on WhatsApp to discuss your website requirements, timeline, or design quote.
+              Connect directly with Ali AI Solutions on WhatsApp to discuss your AI voice agent workflow, business automation, or website project.
             </p>
 
             <div className="space-y-3">
@@ -116,14 +116,14 @@ export default function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
               {/* Email option */}
               <a
                 href={siteConfig.contact.emailMailto}
-                className="flex items-center justify-between p-3.5 rounded-xl bg-white/[0.04] border border-white/10 hover:border-indigo-500/40 hover:bg-indigo-500/[0.06] transition-all group"
+                className="flex items-center justify-between p-3.5 rounded-xl bg-white/[0.04] border border-white/10 hover:border-blue-500/40 hover:bg-blue-500/[0.06] transition-all group"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
                     <Mail className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-white group-hover:text-indigo-300 transition-colors">
+                    <div className="text-sm font-medium text-white group-hover:text-blue-300 transition-colors">
                       Send Direct Email
                     </div>
                     <div className="text-xs text-slate-400">
@@ -131,7 +131,7 @@ export default function WhatsAppModal({ isOpen, onClose }: WhatsAppModalProps) {
                     </div>
                   </div>
                 </div>
-                <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-indigo-300 transition-colors" />
+                <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-blue-300 transition-colors" />
               </a>
             </div>
 

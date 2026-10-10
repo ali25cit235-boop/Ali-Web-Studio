@@ -1,39 +1,49 @@
 /**
- * Central configuration file for Ali Web Studio.
- * Update all brand information, contact details, social links,
- * services, projects, and statistics from this single file.
+ * Central configuration file for Ali AI Solutions.
+ * Professional AI Voice Agents, Business Automation & Modern Websites.
  */
 
 import apexAutoImg from '../assets/images/apex_car_detailing_1791213804660.jpg';
 import lumiereDentalImg from '../assets/images/project_lumiere_dental_1791208413825.jpg';
 import flavorsRestaurantImg from '../assets/images/flavors_dining_1791213825726.jpg';
+import salonImg from '../assets/images/salon_concept_ui_1791616090812.jpg';
+import homeServiceImg from '../assets/images/homeservice_ui_1791616126875.jpg';
 
-export interface ProjectItem {
+export interface VoiceAgentService {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  benefits: string[];
+  capabilities: string[];
+  idealFor: string;
+}
+
+export interface WebsiteDemoItem {
   id: string;
   title: string;
   category: string;
+  businessType: string;
   tagline: string;
   description: string;
   url: string;
   hasLiveDemo: boolean;
   image: string;
-  tags: string[];
   deliverables: string[];
   featured: boolean;
 }
 
-export interface ServiceItem {
-  number: string;
-  title: string;
-  description: string;
-  features: string[];
-  iconName: string;
+export interface BusinessTypeOption {
+  id: string;
+  label: string;
+  category: string;
+  typicalNeeds: string;
 }
 
-export interface StatItem {
-  value: string;
+export interface SolutionGoalOption {
+  id: string;
   label: string;
-  caption: string;
+  shortDesc: string;
 }
 
 export interface ProcessStep {
@@ -41,25 +51,28 @@ export interface ProcessStep {
   title: string;
   subtitle: string;
   description: string;
-  deliverables: string[];
+  details: string[];
 }
 
-export interface ValuePillar {
-  title: string;
-  subtitle: string;
-  description: string;
-  iconName: string;
+export interface FAQItem {
+  question: string;
+  answer: string;
 }
 
 export const siteConfig = {
   brand: {
-    name: "Ali Web Studio",
-    shortName: "Ali Web Studio",
-    type: "Independent web design & development studio",
-    tagline: "Modern Websites. Built to Make Your Business Stand Out.",
-    supportingLine: "Premium, responsive websites designed for businesses that want to look professional online.",
-    heroDescription: "Ali Web Studio creates modern, responsive and conversion-focused websites for businesses that want a stronger online presence.",
-    locationNote: "Available Worldwide · Remote Collaboration",
+    name: "Ali AI Solutions",
+    shortName: "Ali AI",
+    tagline: "AI Voice Agents. Smarter Business. Better Experiences.",
+    supportingStatement:
+      "Helping businesses handle customer calls, capture leads, answer common questions, and build a stronger online presence with AI-powered solutions.",
+    heroHeadline: "Never Miss an Opportunity to Connect.",
+    heroSubheadline:
+      "AI voice agents that help businesses handle customer calls, answer common questions, capture enquiries, and stay responsive — even when your team is busy.",
+    problemHeadline: "Your Business Deserves a Smarter Way to Respond.",
+    websiteHeadline: "A Website That Works as Hard as Your Business.",
+    whyHeadline: "Technology Should Solve Real Business Problems.",
+    contactHeadline: "Let's Build a Smarter Business Experience.",
   },
 
   contact: {
@@ -69,203 +82,349 @@ export const siteConfig = {
     instagramUrl: "https://www.instagram.com/aliwebstudio.co/",
     telegramHandle: "@aliwebstudio_co",
     telegramUrl: "https://t.me/aliwebstudio_co",
-    /**
-     * WHATSAPP CONFIGURATION:
-     * International number: +92310-6449454 (Pakistan: +92 310 6449454)
-     */
     whatsappNumber: "923106449454",
     whatsappDisplay: "+92 310 6449454",
-    whatsappUrl: "https://wa.me/923106449454?text=Hi%20Ali%20Web%20Studio%2C%20I'd%20like%20to%20discuss%20a%20website%20project.",
-    whatsappPlaceholderNotice: "+92 310 6449454",
+    whatsappUrl:
+      "https://wa.me/923106449454?text=Hi%20Ali%20AI%20Solutions%2C%20I'd%20like%20to%20discuss%20an%20AI%20voice%20agent%20or%20website%20solution.",
   },
 
-  trustStrip: [
-    { title: "Modern Design", desc: "Contemporary aesthetic tailored to your brand" },
-    { title: "Responsive", desc: "Pixel-perfect across phones, tablets & monitors" },
-    { title: "Fast", desc: "Speed-optimized with zero bloated code" },
-    { title: "Built for Business", desc: "Structured to drive clear inquiries & trust" },
+  // Section C: Problems vs AI Voice Agent Solutions
+  problemComparisons: [
+    {
+      challenge: "Missed customer calls during rush hours or staff meetings",
+      outcome: "24/7 polite greeting with instant call pickup without busy tones",
+    },
+    {
+      challenge: "Staff answering the same opening hours & pricing questions 30x a day",
+      outcome: "Consistent, accurate FAQ answers pulled directly from your approved knowledge base",
+    },
+    {
+      challenge: "High ad spend wasted because callers abandon before leaving contact details",
+      outcome: "Polite, conversational lead capture collecting caller name and intent with consent",
+    },
+    {
+      challenge: "Enquiries arriving after-hours or over weekends left unanswered until Monday",
+      outcome: "Immediate after-hours triage explaining next steps and logging customer details",
+    },
+    {
+      challenge: "Unstructured voicemails requiring minutes of manual playback and transcribing",
+      outcome: "Clean, organized summaries delivered directly for your team's follow-up",
+    },
   ],
 
-  stats: [
+  // Section D: AI Voice Agent Services (The primary offerings)
+  voiceServices: [
     {
-      value: "3",
-      label: "Featured Concepts",
-      caption: "Meticulously crafted website demos ready to explore",
+      id: "ai-receptionist",
+      title: "AI Receptionist",
+      subtitle: "First-Line Front Desk Call Management",
+      description:
+        "Welcomes every caller warmly, answers approved frequently asked questions, collects enquiry details, and routes priority requests.",
+      benefits: [
+        "Welcomes callers with custom branded greeting",
+        "Answers approved FAQs (location, hours, services)",
+        "Captures caller name, request & call-back number",
+        "Transfers urgent callers to staff when configured",
+      ],
+      capabilities: ["Custom Script Flow", "FAQ Knowledge Base", "Call Routing Hooks"],
+      idealFor: "Clinics, salons, restaurants & professional offices",
     },
     {
-      value: "100%",
-      label: "Responsive & Mobile-First",
-      caption: "Flawless rendering on every screen size",
+      id: "lead-capture",
+      title: "Lead Capture Voice Agent",
+      subtitle: "High-Intent Inbound Inquiry Qualification",
+      description:
+        "Collects caller names and contact information with consent, asks relevant qualification questions, and prepares structured follow-up summaries.",
+      benefits: [
+        "Asks targeted qualification questions smoothly",
+        "Captures accurate contact details with caller consent",
+        "Filters spam and low-intent callers politely",
+        "Delivers structured inquiry summaries for swift follow-up",
+      ],
+      capabilities: ["Caller Verification", "Qualification Rules", "CRM & Webhook Ready"],
+      idealFor: "Roofing, auto repair, contractors & real estate",
     },
     {
-      value: "24/7",
-      label: "Online Presence",
-      caption: "Always-on digital store for your business",
+      id: "appointment-assistant",
+      title: "Appointment Enquiry Assistant",
+      subtitle: "Frictionless Scheduling & Availability Info",
+      description:
+        "Handles appointment-related questions, collects preferred dates and time slots, and supports booking workflows when a real calendar integration is configured.",
+      benefits: [
+        "Explains available service appointment windows",
+        "Collects customer preferred dates, times & service types",
+        "Integrates with calendars when booking hooks are set up",
+        "Sends confirmation details or flags requests for approval",
+      ],
+      capabilities: ["Time Window Parsing", "Calendar Sync (Optional)", "Reschedule Inquiries"],
+      idealFor: "Dental clinics, med spas, barbershops & salons",
     },
     {
-      value: "<1s",
-      label: "Performance Optimized",
-      caption: "Engineered for rapid loading & smooth motion",
+      id: "customer-support",
+      title: "Customer Support Voice Assistant",
+      subtitle: "Knowledge-Based Inquiry Resolution",
+      description:
+        "Answers customer questions from your approved business knowledge base, explains services and policies, and escalates uncertain requests to human staff.",
+      benefits: [
+        "Resolves repetitive inquiries in natural conversational tone",
+        "Strictly adheres to approved business information",
+        "Gracefully escalates complex cases to your staff",
+        "Maintains consistent brand tone without fatigue",
+      ],
+      capabilities: ["Strict Hallucination Guards", "Human Transfer Fallback", "Multi-Topic Handling"],
+      idealFor: "Retail stores, service providers & course academies",
     },
-  ] as StatItem[],
+    {
+      id: "after-hours",
+      title: "After-Hours Call Assistant",
+      subtitle: "24/7 Night & Weekend Inquiry Protection",
+      description:
+        "Helps businesses collect customer enquiries outside normal working hours and explains available next steps using approved business guidelines.",
+      benefits: [
+        "Never lets a night or weekend lead go cold",
+        "Explains operating hours and next working-day timelines",
+        "Collects customer urgency and contact preferences",
+        "Delivers morning summary ready for your first shift",
+      ],
+      capabilities: ["Time-Conditioned Routing", "Urgency Detection", "Morning Briefing Reports"],
+      idealFor: "Emergency repairs, home services, clinics & hospitality",
+    },
+    {
+      id: "custom-agent",
+      title: "Custom AI Voice Agent",
+      subtitle: "Tailored Architecture for Unique Operations",
+      description:
+        "A fully tailored conversation workflow built around your company's proprietary operational steps, external software systems, and communication rules.",
+      benefits: [
+        "Custom dialog flows matching your exact operational workflow",
+        "Integrates with your existing phone trunks or VoIP system",
+        "Custom tone, accent, and compliance guidelines",
+        "Multi-stage validation and edge-case handling",
+      ],
+      capabilities: ["Proprietary Logic", "Custom API Integrations", "Dedicated Quality Audits"],
+      idealFor: "Growing businesses with bespoke workflows",
+    },
+  ] as VoiceAgentService[],
 
-  services: [
+  // Section E: How It Works
+  process: [
     {
-      number: "01",
-      title: "Business Websites",
-      description: "Modern websites for local businesses and service providers that need to look credible and generate high-intent inquiries.",
-      features: ["Custom tailored design", "Clear conversion funnels", "Contact & lead forms", "Google-ready structure"],
-      iconName: "Briefcase",
+      step: "01",
+      title: "Understand Your Business",
+      subtitle: "Call Audit & Goal Alignment",
+      description:
+        "We identify your typical call types, most frequent customer questions, peak hours, and desired operational outcomes.",
+      details: ["Call volume audit", "FAQ inventory", "Desired escalation rules"],
     },
     {
-      number: "02",
-      title: "Restaurant Websites",
-      description: "Elegant digital menus, high-impact culinary galleries, location details, and intuitive mobile-friendly dining experiences.",
-      features: ["Visual menu showcase", "Reservation CTA integration", "Mobile-first ordering layout", "Hours & Google Map locator"],
-      iconName: "Utensils",
+      step: "02",
+      title: "Design the Agent",
+      subtitle: "Conversation Flow & Guardrails",
+      description:
+        "We map out polite, natural conversation flows, approved company information, tone of voice, and human transfer criteria.",
+      details: ["Script architecture", "Edge-case safeguards", "Tone & pacing alignment"],
     },
     {
-      number: "03",
-      title: "Landing Pages",
-      description: "Focused single-page destinations engineered around a singular goal, product launch, or advertising campaign.",
-      features: ["Hero value proposition", "Frictionless action steps", "Speed-tuned delivery", "Engaging scroll pacing"],
-      iconName: "Zap",
+      step: "03",
+      title: "Configure and Test",
+      subtitle: "Provider Setup & Scenario Testing",
+      description:
+        "The voice agent is configured on the chosen platform and thoroughly tested across realistic customer call scenarios before going near callers.",
+      details: ["Platform configuration", "Multi-voice stress testing", "Webhook & calendar checks"],
     },
     {
-      number: "04",
-      title: "Portfolio Websites",
-      description: "Professional personal and creative portfolios that showcase your craft, credentials, and achievements with refinement.",
-      features: ["Editorial project showcases", "Interactive media previews", "Biography & credentials", "Direct client contact flow"],
-      iconName: "LayoutGrid",
+      step: "04",
+      title: "Launch and Improve",
+      subtitle: "Controlled Rollout & Refinement",
+      description:
+        "After agreed setup and verification, the solution is launched in a controlled manner and continually refined based on real caller feedback.",
+      details: ["Controlled activation", "Transcript review", "Ongoing prompt refinement"],
     },
-    {
-      number: "05",
-      title: "Website Redesign",
-      description: "Modernizing outdated websites with polished UI, clean mobile responsiveness, crisp typography, and streamlined hierarchy.",
-      features: ["Full aesthetic overhaul", "Mobile overhaul", "Speed & performance uplift", "Content reorganization"],
-      iconName: "Sparkles",
-    },
-    {
-      number: "06",
-      title: "Responsive Development",
-      description: "Websites that work fluidly across smartphones, tablets, laptops, and ultra-wide screens with zero layout glitches.",
-      features: ["Cross-browser testing", "Fluid responsive layout", "Touch-friendly controls", "Subtle micro-animations"],
-      iconName: "Smartphone",
-    },
-  ] as ServiceItem[],
+  ] as ProcessStep[],
 
-  projects: [
+  // Section F: Business-Specific Solution Finder options & recommendation logic
+  businessTypes: [
+    { id: "restaurant", label: "Restaurant or Cafe", category: "Culinary & Dining", typicalNeeds: "Hours, menu FAQs, reservations & location questions" },
+    { id: "clinic", label: "Dental or Medical Clinic", category: "Healthcare", typicalNeeds: "Appointment inquiries, approved service FAQs & intake details" },
+    { id: "salon", label: "Salon or Barbershop", category: "Personal Care", typicalNeeds: "Stylist availability, service pricing & booking questions" },
+    { id: "automotive", label: "Auto Repair or Detailing", category: "Automotive Services", typicalNeeds: "Quote requests, service inquiries & vehicle drop-off notes" },
+    { id: "cleaning", label: "Cleaning Service", category: "Home & Facility Care", typicalNeeds: "Service area checks, estimate requests & recurring schedules" },
+    { id: "roofing", label: "Roofing or Home Services", category: "Contractors & Trade", typicalNeeds: "Urgent storm repair leads, estimate requests & address capture" },
+    { id: "real-estate", label: "Real Estate", category: "Property & Leasing", typicalNeeds: "Listing inquiries, open-house times & buyer/seller qualification" },
+    { id: "retail", label: "Retail Shop", category: "Commerce", typicalNeeds: "Stock availability, directions, holiday hours & return policy FAQs" },
+    { id: "education", label: "Education or Coaching", category: "Learning & Academy", typicalNeeds: "Course syllabus questions, schedule details & lead enrollment" },
+    { id: "other", label: "Other Business", category: "Commercial Enterprise", typicalNeeds: "Custom inquiry workflows & specialized customer communications" },
+  ] as BusinessTypeOption[],
+
+  solutionGoals: [
+    { id: "incoming-calls", label: "Handle incoming calls", shortDesc: "Answer calls consistently without busy signals" },
+    { id: "answer-faqs", label: "Answer common customer questions", shortDesc: "Free staff from answering repetitive pricing/hours questions" },
+    { id: "capture-leads", label: "Capture leads and enquiries", shortDesc: "Collect caller name and contact details with consent" },
+    { id: "manage-appointments", label: "Manage appointment enquiries", shortDesc: "Collect preferred dates and service requests" },
+    { id: "get-website", label: "Get a professional business website", shortDesc: "Build a fast, modern digital storefront" },
+    { id: "both", label: "Both AI voice agents and a website", shortDesc: "Complete digital presence & automated call handling" },
+    { id: "not-sure", label: "I am not sure yet", shortDesc: "Help me explore what fits my current workflow best" },
+  ] as SolutionGoalOption[],
+
+  // Section H: Website Demos (Real verified links + polished concept previews)
+  websiteDemos: [
     {
       id: "apex-auto-detailing",
       title: "Apex Auto Detailing",
-      category: "Automotive Services",
+      category: "Automotive",
+      businessType: "automotive",
       tagline: "High-End Ceramic & Paint Protection",
-      description: "Premium automotive detailing website concept with interactive sections, responsive design, service pricing tiers, and smooth animations.",
+      description:
+        "Premium automotive detailing website with interactive service pricing tiers, booking inquiry hook, responsive layout, and dark agency aesthetic.",
       url: "https://apex-auto-detailing-demo.pages.dev/",
       hasLiveDemo: true,
       image: apexAutoImg,
-      tags: ["Dark Agency Theme", "Interactive Tiers", "Mobile Responsive"],
-      deliverables: ["Visual Identity", "Interactive Packages", "Booking Flow Mockup", "Responsive Code"],
+      deliverables: ["Visual Identity", "Interactive Tiers", "Booking Flow", "Cloudflare Pages Ready"],
       featured: true,
     },
     {
       id: "lumiere-dental",
       title: "Lumiere Dental Demo",
-      category: "Healthcare & Clinic",
+      category: "Clinics",
+      businessType: "clinic",
       tagline: "Modern Gentle Dental Studio",
-      description: "Modern dental website concept focused on clean visual design, patient trust, service transparency, and frictionless appointment contact.",
+      description:
+        "Modern healthcare website concept focused on patient trust, treatment transparency, doctor credentials, and frictionless appointment contact.",
       url: "https://ali25cit235-boop.github.io/Lumiere-Dental-Demo/",
       hasLiveDemo: true,
       image: lumiereDentalImg,
-      tags: ["Clean Medical Aesthetic", "Patient Trust", "Fast Contact Flow"],
       deliverables: ["Warm Scandinavian UI", "Treatment Catalog", "Doctor Showcase", "Responsive Layout"],
       featured: true,
     },
     {
       id: "flavors-restaurant",
       title: "FLAVORS Restaurant",
-      category: "Culinary & Dining",
+      category: "Restaurants",
+      businessType: "restaurant",
       tagline: "Artisanal Fine Dining Experience",
-      description: "Premium restaurant website concept with food-focused visuals, interactive seasonal menu presentation, and modern bistro experience.",
+      description:
+        "Atmospheric restaurant website featuring culinary visual storytelling, interactive seasonal menu presentation, and table reservation hooks.",
       url: "https://flavourz-restaurant-demo.netlify.app/",
       hasLiveDemo: true,
       image: flavorsRestaurantImg,
-      tags: ["Editorial Mood", "Interactive Menu", "Visual Storytelling"],
-      deliverables: ["Atmospheric Dark UI", "Digital Menu Layout", "Table Reservation Hook", "Mobile First"],
+      deliverables: ["Atmospheric Dark UI", "Digital Menu Layout", "Table Reservation Hook", "Netlify Deployed"],
       featured: true,
     },
-  ] as ProjectItem[],
+    {
+      id: "elara-salon",
+      title: "Elara Luxury Salon Concept",
+      category: "Salons",
+      businessType: "salon",
+      tagline: "Boutique Hair Styling & Grooming",
+      description:
+        "Concept preview for a high-end salon and barbershop website with stylist showcases, treatment menus, and appointment inquiry layout.",
+      url: "",
+      hasLiveDemo: false,
+      image: salonImg,
+      deliverables: ["Concept Preview", "Styling Gallery", "Service Schedule", "Custom Color Grading"],
+      featured: false,
+    },
+    {
+      id: "elite-roofing",
+      title: "Elite Roofing & Home Services Concept",
+      category: "Home Services",
+      businessType: "roofing",
+      tagline: "Residential & Commercial Contractor",
+      description:
+        "Concept preview designed for contractor lead generation with instant estimate calculator, emergency storm damage banner, and trust badges.",
+      url: "",
+      hasLiveDemo: false,
+      image: homeServiceImg,
+      deliverables: ["Concept Preview", "Estimate Calculator", "Emergency Hotline Hook", "Lead Gen Focus"],
+      featured: false,
+    },
+  ] as WebsiteDemoItem[],
 
-  process: [
+  // Section J: Why Ali AI Solutions Principles
+  principles: [
     {
-      step: "01",
-      title: "Discover",
-      subtitle: "Understanding your vision",
-      description: "We discuss your business model, target audience, competitive landscape, and the core purpose of your new website.",
-      deliverables: ["Scope Definition", "Target Audience Alignment", "Content Outline"],
+      title: "Business-First Planning",
+      description:
+        "We never build technology for the sake of buzzwords. Every voice flow and website component starts by understanding how your business actually makes money and serves customers.",
     },
     {
-      step: "02",
-      title: "Design",
-      subtitle: "Crafting the visual language",
-      description: "Creating the bespoke design layout, typography pairings, color palette, and interactive components tailored to your industry.",
-      deliverables: ["Custom Visual Direction", "Wireframe Architecture", "Interactive Prototype"],
+      title: "Clear, Honest Communication",
+      description:
+        "We speak plain English, not technical jargon. You'll always know what an AI agent can do, what depends on third-party integrations, and where humans should stay in the loop.",
     },
     {
-      step: "03",
-      title: "Build",
-      subtitle: "Precision engineering",
-      description: "Developing the responsive website with clean modern code, fast load times, and fluid micro-interactions across every device.",
-      deliverables: ["Clean React Code", "Mobile-First Responsiveness", "Cross-Device Testing"],
+      title: "Tailored Conversation Workflows",
+      description:
+        "No generic robotic scripts. We configure conversation patterns to reflect your business's real hours, real policies, and preferred tone of voice.",
     },
     {
-      step: "04",
-      title: "Launch",
-      subtitle: "Deployment & handover",
-      description: "Testing every link and contact trigger, deploying to fast cloud hosting, and delivering the finalized website ready for business.",
-      deliverables: ["Production Cloud Deployment", "Quality Assurance Pass", "Client Handover"],
-    },
-  ] as ProcessStep[],
-
-  whyChooseUs: [
-    {
-      title: "Modern Design",
-      subtitle: "Designed to feel current and high-end",
-      description: "Every website is crafted with fresh aesthetics, purposeful typography, and thoughtful hierarchy rather than generic pre-made templates.",
-      iconName: "Palette",
+      title: "Transparent Project Scope",
+      description:
+        "Before starting, we outline exactly what will be built, tested, and handed over — with no hidden surprises, inflated claims, or locked-in black boxes.",
     },
     {
-      title: "Mobile First",
-      subtitle: "Built for where your customers are",
-      description: "Over 60% of modern visitors browse on smartphones. Your site will feel just as natural and responsive on a phone as on a desktop.",
-      iconName: "Smartphone",
+      title: "Rigorously Tested Before Callers Connect",
+      description:
+        "Every prompt and fallback rule undergoes multi-scenario testing to minimize awkward pauses, misheard requests, or unhelpful answers.",
     },
     {
-      title: "Clear Communication",
-      subtitle: "Direct, transparent collaboration",
-      description: "Work directly with the designer and builder. Simple, fast communication without agency bureaucracy or endless handoffs.",
-      iconName: "MessageSquare",
+      title: "Human Escalation by Design",
+      description:
+        "When a caller is uncertain, frustrated, or has a complex request, our architectures are designed to gracefully log the request or route to your team.",
     },
-    {
-      title: "Business Focused",
-      subtitle: "Designed to generate inquiries",
-      description: "Good design is more than decoration. We structure each page to guide visitors toward contacting you or exploring your offers.",
-      iconName: "TrendingUp",
-    },
-    {
-      title: "Fast & Lightweight",
-      subtitle: "No unnecessary complexity",
-      description: "Clean code and optimized assets guarantee swift loading times, giving your visitors an immediate, professional experience.",
-      iconName: "Cpu",
-    },
-  ] as ValuePillar[],
-
-  navigation: [
-    { label: "Home", href: "#hero" },
-    { label: "About", href: "#about" },
-    { label: "Services", href: "#services" },
-    { label: "Work", href: "#work" },
-    { label: "Process", href: "#process" },
-    { label: "Contact", href: "#contact" },
   ],
+
+  // Section K: Frequently Asked Questions
+  faqs: [
+    {
+      question: "What is an AI voice agent?",
+      answer:
+        "An AI voice agent is a software assistant that answers and conducts phone conversations in natural spoken language. It can understand what a caller is asking, answer approved questions using your business information, collect customer contact details, and route requests according to your rules.",
+    },
+    {
+      question: "Can an AI voice agent answer calls for my business?",
+      answer:
+        "Yes, when properly configured with a compatible phone provider or call forwarding rule, an AI voice agent can answer incoming calls when your lines are busy, after business hours, or as your primary front-desk receptionist.",
+    },
+    {
+      question: "Can it collect customer enquiries?",
+      answer:
+        "Absolutely. The agent can ask for the caller's name, phone number, reason for calling, and specific details (such as preferred service or vehicle model) with caller consent, and organize that information into an email or CRM summary.",
+    },
+    {
+      question: "Can it book appointments?",
+      answer:
+        "It can collect preferred appointment dates and times out of the box. Direct real-time calendar booking requires integrating with your specific scheduling software (such as Google Calendar, Calendly, or your industry CRM), which can be configured during the project.",
+    },
+    {
+      question: "Does it work with my existing phone number?",
+      answer:
+        "In most cases, businesses use simple conditional call forwarding: if your primary line is unanswered after three rings or when you are closed, your phone carrier automatically forwards the call to the AI agent's dedicated number.",
+    },
+    {
+      question: "Can I connect it to my CRM or calendar?",
+      answer:
+        "Yes. Depending on your chosen voice platform and tools, we can connect captured enquiries to email notifications, Google Sheets, webhooks, or popular CRMs. Integration capabilities depend on your specific software stack.",
+    },
+    {
+      question: "How much does an AI voice agent cost?",
+      answer:
+        "Pricing depends on the complexity of the conversation flow, expected monthly call volume, required integrations (CRM, calendar), and the chosen telephony platform. Contact us to discuss your specific requirements and receive a clear proposal.",
+    },
+    {
+      question: "Can you also build my website?",
+      answer:
+        "Yes. While AI voice agents are our primary specialty, we also build clean, fast, high-performance business websites designed to complement your voice workflows and explain your services clearly.",
+    },
+    {
+      question: "How long does a project take?",
+      answer:
+        "A standard voice agent setup or business website typically takes between 1 to 3 weeks depending on the clarity of your business FAQs, required integrations, and testing scope.",
+    },
+    {
+      question: "Can I test a demo before committing?",
+      answer:
+        "Yes! We walk you through simulated conversation flows and business-specific demos so you can hear and see how the workflow handles realistic customer questions before full deployment.",
+    },
+  ] as FAQItem[],
 };

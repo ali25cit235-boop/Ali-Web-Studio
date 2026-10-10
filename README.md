@@ -1,45 +1,63 @@
-# Ali Web Studio — Official Portfolio Website
+# Ali AI Solutions — Premium AI Voice Agent Agency Website
 
-> Modern Websites. Built to Make Your Business Stand Out.
+> AI Voice Agents. Smarter Business. Better Experiences.
 
-A high-end personal agency portfolio website for **Ali Web Studio**, an independent web design and development studio focusing on modern, responsive, and conversion-focused websites for businesses, local brands, startups, and personal brands.
-
----
-
-## 🚀 Live Demo & Concept Showcases
-
-- **Main Studio**: [Ali Web Studio](https://aliwebstudio.co) (Preview)
-- **Apex Auto Detailing**: [Live Demo](https://apex-auto-detailing-demo.pages.dev/)
-- **Lumiere Dental Demo**: [Live Demo](https://ali25cit235-boop.github.io/Lumiere-Dental-Demo/)
-- **FLAVORS Restaurant**: [Live Demo](https://flavourz-restaurant-demo.netlify.app/)
+Helping businesses handle customer calls, capture leads, answer common questions, and build a stronger online presence with AI-powered solutions.
 
 ---
 
-## 🛠️ Tech Stack
+## 🚀 Live Demo & Showcase Links
+
+- **Agency Website**: [Ali AI Solutions](https://aliwebstudio.co)
+- **Apex Auto Detailing Demo**: [Live Website](https://apex-auto-detailing-demo.pages.dev/)
+- **Lumiere Dental Clinic Demo**: [Live Website](https://ali25cit235-boop.github.io/Lumiere-Dental-Demo/)
+- **FLAVORS Restaurant Demo**: [Live Website](https://flavourz-restaurant-demo.netlify.app/)
+- **Elara Luxury Salon**: Concept Preview
+- **Elite Roofing & Home Services**: Concept Preview
+
+---
+
+## 🛠️ Tech Stack & Architecture
 
 - **Framework**: React 19 + Vite 6
 - **Language**: TypeScript / Modern JavaScript
-- **Styling**: Tailwind CSS v4
-- **Animations**: Framer Motion (`framer-motion`)
+- **Styling**: Tailwind CSS v4 (`@tailwindcss/vite`)
+- **Motion & Interactions**: Framer Motion (`framer-motion`)
 - **Icons**: Lucide React (`lucide-react`)
-- **Typography**: Syne (Display), Plus Jakarta Sans (Body), JetBrains Mono (Data/Code)
-- **Deployment Target**: Cloudflare Pages / GitHub Pages / Vercel (Pure static single-page app, zero backend required)
+- **Typography**: Outfit & Syne (Display), Plus Jakarta Sans (Body), JetBrains Mono (Data/Code)
+- **Design System**: Deep obsidian navy `#080B14`, electric blue `#4F8CFF`, violet `#8B5CF6`, cyan highlights `#38BDF8`
+
+---
+
+## 📱 Features Included
+
+1. **Brand Identity & Vector Monogram**: Original abstract AA monogram combining artificial intelligence, voice waveforms, and digital connectivity in inline SVG.
+2. **Interactive Hero Voice AI Orb**: Live conversation-state visualizer (Idle, Listening, Processing, Speaking) with dynamic waveform pulse and simulated call-flow pipeline.
+3. **Problem & Value Proposition**: Comparative breakdown of traditional phone friction versus structured AI voice agent outcomes.
+4. **Primary AI Voice Services**: 6 marquee offerings (AI Receptionist, Lead Capture, Appointment Assistant, Customer Support, After-Hours Assistant, Custom AI Agent).
+5. **4-Step Engineering Methodology**: Understand &rarr; Design &rarr; Configure & Test &rarr; Launch & Improve.
+6. **Interactive Business Solution Finder**: Multi-step industry selector (10 business types &times; 7 business goals) providing instant tailored recommendations and demo matching.
+7. **Website Development & Demos**: Modern mobile-first digital presence section with category-filtered demo gallery (Automotive, Clinics, Restaurants, Salons, Home Services).
+8. **Future Voice Agent Demo Area**: Interactive step-by-step simulated conversation player with audio waveform.
+9. **Core Agency Principles**: Business-first planning, transparent scopes, and human escalation by design.
+10. **Frequently Asked Questions**: 10 transparent accordion items addressing phone routing, CRM sync, pricing, and timelines.
+11. **Comprehensive Project Enquiry Form**: Pre-fillable consultation form with real validation, direct WhatsApp dispatch, email mailto generator, and Telegram access.
 
 ---
 
 ## 📁 Central Configuration (`src/data/siteConfig.ts`)
 
-All studio information, contact details, social links, portfolio projects, services, statistics, and methodology steps are managed centrally in:
+All brand information, contact details, social links, services, business types, FAQs, and demo items are managed centrally in:
 
 ```
 src/data/siteConfig.ts
 ```
 
-### Updating Contact Details
-- **Email**: Edit `siteConfig.contact.email`
-- **Instagram**: Edit `siteConfig.contact.instagramHandle` and `siteConfig.contact.instagramUrl`
-- **Telegram**: Edit `siteConfig.contact.telegramHandle` and `siteConfig.contact.telegramUrl`
-- **WhatsApp**: Update `siteConfig.contact.whatsappNumber` with your phone number (e.g., `"14155552671"` without `+` or spaces). When left empty, the site automatically displays `"WhatsApp number to be added"` and provides direct Email and Telegram options.
+### Contact Details
+- **Email**: `aliwebstudio.co@gmail.com`
+- **WhatsApp**: `+92 310 6449454`
+- **Instagram**: `@aliwebstudio.co`
+- **Telegram**: `@aliwebstudio_co`
 
 ---
 
@@ -54,81 +72,32 @@ npm install
 ```bash
 npm run dev
 ```
-Open `http://localhost:3000` (or the port Vite provides) in your browser.
 
 ### 3. Production Build
 ```bash
 npm run build
 ```
-This generates the optimized, production-ready static assets in the `dist/` directory.
+Generates production-ready static assets in the `dist/` directory.
 
-### 4. Preview Production Build
+### 4. Preview Build
 ```bash
 npm run preview
 ```
 
 ---
 
-## 🌐 Cloudflare Pages Deployment & Custom Domain
+## 🌐 Cloudflare Pages Deployment Settings
 
-This project is 100% static and configured for instant zero-configuration deployment to **Cloudflare Pages**:
+This project is 100% static and optimized for zero-error Cloudflare Pages deployment:
 
-### Step 1: Deploy to Cloudflare Pages
-1. Log into your [Cloudflare Dashboard](https://dash.cloudflare.com/).
-2. Navigate to **Workers & Pages** → **Create application** → **Pages** → **Connect to Git**.
-3. Select your GitHub repository (`ali-web-studio`).
-4. In the **Build configuration** settings:
-   - **Framework preset**: `React (Vite)`
-   - **Build command**: `npm run build`
-   - **Build output directory**: `dist`
-   - **Root directory**: *(leave blank)*
-   - **Node version**: `22` (configured via `.nvmrc` in repository root, or Environment Variable `NODE_VERSION` = `22`)
-5. Click **Save and Deploy**.
-
-### Step 2: Connect your Custom Domain (e.g. aliwebstudio.co)
-1. In Cloudflare Pages, go to your project → **Custom domains** tab.
-2. Click **Set up a custom domain**.
-3. Enter your domain name (e.g. `aliwebstudio.co` or `www.aliwebstudio.co`).
-4. Cloudflare automatically sets up DNS CNAME routing and provisions an SSL certificate within a few minutes.
-5. Your studio website is now live on your custom domain!
-
----
-
-## 🐙 Uploading to GitHub
-
-To push this codebase to your own GitHub account:
-
-```bash
-# Initialize git repository (if not already initialized)
-git init
-
-# Add all files
-git add .
-
-# Commit changes
-git commit -m "feat: initial Ali Web Studio portfolio release"
-
-# Rename branch to main
-git branch -M main
-
-# Link to your new GitHub repository
-git remote add origin https://github.com/<YOUR-USERNAME>/ali-web-studio.git
-
-# Push to GitHub
-git push -u origin main
-```
-
----
-
-## 📬 Brand Contact Details
-
-- **Email**: [aliwebstudio.co@gmail.com](mailto:aliwebstudio.co@gmail.com)
-- **WhatsApp**: [+92 310 6449454](https://wa.me/923106449454)
-- **Instagram**: [@aliwebstudio.co](https://www.instagram.com/aliwebstudio.co/)
-- **Telegram**: [@aliwebstudio_co](https://t.me/aliwebstudio_co)
+- **Framework preset**: `React (Vite)`
+- **Build command**: `npm run build`
+- **Build output directory**: `dist`
+- **Root directory**: *(leave blank)*
+- **Node version**: `22` (configured via `.nvmrc` and `.npmrc` with `legacy-peer-deps=true`)
 
 ---
 
 ## 📄 License
 
-Independent Web Design & Development Studio © All rights reserved.
+Ali AI Solutions &copy; All rights reserved. Practical AI voice agents and business automation.
