@@ -1,6 +1,6 @@
 {
   "name": "Ali AI Solutions — AI Voice Agents & Business Automation",
   "description": "Ali AI Solutions builds intelligent AI voice agents, business automation, and high-performance websites for forward-thinking businesses.",
-  "requestFramePermissions": [],
+  "requestFramePermissions": ["microphone"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -55,9 +55,17 @@ export class AudioQueuePlayer {
       this.audioCtx = new AudioCtx({ sampleRate: this.sampleRate });
     }
     if (this.audioCtx.state === 'suspended') {
-      this.audioCtx.resume();
+      this.audioCtx.resume().catch(() => {});
     }
     this.nextPlayTime = this.audioCtx.currentTime;
+  }
+
+  // Explicit user-gesture unlock for mobile (Android Chrome, iOS Safari)
+  public unlock() {
+    this.init();
+    if (this.audioCtx && this.audioCtx.state === 'suspended') {
+      this.audioCtx.resume().catch(() => {});
+    }
   }
 
   // Play a chunk of base64-encoded raw 16-bit PCM (24kHz mono)

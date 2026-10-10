@@ -57,6 +57,114 @@ Never ask for passwords, payment-card information, identity documents, or unnece
 
 Do not pressure visitors to buy. Help them understand their options.`;
 
+// Format and sanitize chat history so Gemini never rejects turn sequence or first role
+function formatAndSanitizeContents(messages: Array<{ role: string; content?: string; text?: string }>) {
+  const rawList = messages
+    .filter((m) => (m.content || m.text || '').trim().length > 0)
+    .map((m) => ({
+      role: m.role === 'user' ? ('user' as const) : ('model' as const),
+      text: (m.content || m.text || '').trim(),
+    }));
+
+  if (rawList.length === 0) {
+    return [{ role: 'user' as const, parts: [{ text: 'Hello' }] }];
+  }
+
+  // Ensure first turn sent to Gemini is 'user'
+  let list = rawList;
+  while (list.length > 0 && list[0].role !== 'user') {
+    list.shift();
+  }
+  if (list.length === 0) {
+    list = [{ role: 'user' as const, text: rawList[0].text || 'Hello' }];
+  }
+
+  // Merge adjacent turns with the same role so they alternate strictly user -> model -> user
+  const collapsed: Array<{ role: 'user' | 'model'; parts: [{ text: string }] }> = [];
+  for (const item of list) {
+    if (collapsed.length > 0 && collapsed[collapsed.length - 1].role === item.role) {
+      collapsed[collapsed.length - 1].parts[0].text += `\n${item.text}`;
+    } else {
+      collapsed.push({ role: item.role, parts: [{ text: item.text }] });
+    }
+  }
+
+  return collapsed;
+}
+
+// Resilient multi-model generation with automatic fallback to prevent 503 high-demand spike failures
+async function generateReceptionistReply(contents: any[], systemInstruction: string): Promise<string> {
+  const modelsToTry = ['gemini-flash-latest', 'gemini-3.1-flash-lite', 'gemini-3.8-flash'];
+  let lastError: any = null;
+
+  for (const model of modelsToTry) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents,
+        config: {
+          systemInstruction,
+          temperature: 0.7,
+        },
+      });
+      const text = response.text?.trim();
+      if (text) {
+        return text;
+      }
+    } catch (err: any) {
+      console.warn(`[Gemini] Model ${model} returned error, trying fallback:`, err?.message || err);
+      lastError = err;
+    }
+  }
+
+  throw lastError || new Error('All conversational models currently unavailable. Please try again in a moment.');
+}
+
+// Resilient TTS speech synthesis helper
+async function synthesizeSpeech(text: string, voiceName = 'Kore'): Promise<string> {
+  const modelsToTry = ['gemini-3.8-flash-lite-tts', 'gemini-3.8-flash-tts'];
+  let lastError: any = null;
+
+  for (const model of modelsToTry) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                text,
+                speechMetadata: {
+                  style: 'Friendly, natural, professional female receptionist',
+                },
+              },
+            ],
+          },
+        ],
+        config: {
+          responseModalities: [Modality.AUDIO],
+          speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: { voiceName: voiceName || 'Kore' },
+            },
+          },
+        },
+      });
+
+      const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+      if (base64Audio) {
+        return base64Audio;
+      }
+    } catch (err: any) {
+      console.warn(`[TTS] Model ${model} failed, trying next:`, err?.message || err);
+      lastError = err;
+    }
+  }
+
+  throw lastError || new Error('TTS voice synthesis unavailable');
+}
+
 // Health check endpoint
 app.get('/api/health', (_req, res) => {
   res.json({
@@ -64,13 +172,14 @@ app.get('/api/health', (_req, res) => {
     hasApiKey: !!apiKey,
     agency: 'Ali AI Solutions',
     voice: 'Kore (Female, Warm Customer Service)',
-    model: 'gemini-3.8-flash',
+    primaryChatModel: 'gemini-flash-latest',
+    fallbackChatModel: 'gemini-3.1-flash-lite',
     liveModel: 'gemini-3.8-live',
     ttsModel: 'gemini-3.8-flash-lite-tts',
   });
 });
 
-// Text Chat endpoint using gemini-3.8-flash (Free-tier eligible, server-side only)
+// Text Chat endpoint with multi-model resilience and history sanitization
 app.post('/api/chat', async (req, res) => {
   try {
     const { messages, languagePreference } = req.body;
@@ -92,22 +201,11 @@ app.post('/api/chat', async (req, res) => {
       langInstruction = ` Preferred language explicitly requested by user: ${languagePreference}. Please respond in ${languagePreference}.`;
     }
 
-    // Format history for gemini-3.8-flash
-    const contents = messages.map((m: { role: string; content: string }) => ({
-      role: m.role === 'user' ? 'user' : 'model',
-      parts: [{ text: m.content }],
-    }));
-
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
-      contents,
-      config: {
-        systemInstruction: RECEPTIONIST_SYSTEM_INSTRUCTION + langInstruction,
-        temperature: 0.7,
-      },
-    });
-
-    const reply = response.text || 'Thank you for reaching out. How can I help with your business needs today?';
+    const sanitizedContents = formatAndSanitizeContents(messages);
+    const reply = await generateReceptionistReply(
+      sanitizedContents,
+      RECEPTIONIST_SYSTEM_INSTRUCTION + langInstruction
+    );
 
     res.json({ reply });
   } catch (err: unknown) {
@@ -132,42 +230,65 @@ app.post('/api/tts', async (req, res) => {
       return;
     }
 
-    // Call official Gemini TTS model
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash-lite-tts',
-      contents: [
-        {
-          role: 'user',
-          parts: [
-            {
-              text,
-              speechMetadata: {
-                style: 'Friendly, natural, professional female receptionist',
-              },
-            },
-          ],
-        },
-      ],
-      config: {
-        responseModalities: [Modality.AUDIO],
-        speechConfig: {
-          voiceConfig: {
-            prebuiltVoiceConfig: { voiceName: voiceName || 'Kore' },
-          },
-        },
-      },
-    });
-
-    const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-    if (!base64Audio) {
-      res.status(500).json({ error: 'No audio returned from speech synthesis model' });
-      return;
-    }
-
+    const base64Audio = await synthesizeSpeech(text, voiceName);
     res.json({ audioBase64: base64Audio, mimeType: 'audio/wav' });
   } catch (err: unknown) {
     console.error('TTS API Error:', err);
     const message = err instanceof Error ? err.message : 'Speech synthesis failed';
+    res.status(500).json({ error: message });
+  }
+});
+
+// Full Voice Turn endpoint (Processes conversational turn and synthesizes speech in 1 fast roundtrip)
+app.post('/api/voice-turn', async (req, res) => {
+  try {
+    const { messages, userText, languagePreference, voiceName = 'Kore' } = req.body;
+
+    if (!apiKey) {
+      res.status(503).json({ error: 'Gemini API key missing' });
+      return;
+    }
+
+    let history: Array<{ role: string; content?: string; text?: string }> = [];
+    if (Array.isArray(messages)) {
+      history = [...messages];
+    }
+    if (userText && typeof userText === 'string') {
+      history.push({ role: 'user', content: userText.trim() });
+    }
+
+    if (history.length === 0) {
+      res.status(400).json({ error: 'No user input or message history provided' });
+      return;
+    }
+
+    let langInstruction = '';
+    if (languagePreference && languagePreference !== 'auto') {
+      langInstruction = ` Preferred language requested: ${languagePreference}. Please speak in ${languagePreference}.`;
+    }
+
+    const sanitizedContents = formatAndSanitizeContents(history);
+    const reply = await generateReceptionistReply(
+      sanitizedContents,
+      RECEPTIONIST_SYSTEM_INSTRUCTION + langInstruction
+    );
+
+    // Synthesize audio
+    let audioBase64: string | null = null;
+    try {
+      audioBase64 = await synthesizeSpeech(reply, voiceName);
+    } catch (ttsErr) {
+      console.warn('Voice turn TTS synthesis error:', ttsErr);
+    }
+
+    res.json({
+      reply,
+      audioBase64,
+      mimeType: audioBase64 ? 'audio/wav' : null,
+    });
+  } catch (err: unknown) {
+    console.error('Voice Turn API Error:', err);
+    const message = err instanceof Error ? err.message : 'Voice processing failed';
     res.status(500).json({ error: message });
   }
 });
@@ -187,7 +308,7 @@ app.post('/api/extract-lead', async (req, res) => {
     }
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
+      model: 'gemini-flash-latest',
       contents: `Analyze this conversation transcript between a visitor and the Ali AI Solutions receptionist. Extract any lead qualification information provided by the visitor. If a field was not mentioned, set it to null or leave empty.
 Transcript:
 ${transcript}`,
@@ -330,15 +451,17 @@ wss.on('connection', async (clientWs: WebSocket) => {
     });
 
     isSessionActive = true;
-    clientWs.send(JSON.stringify({ type: 'status', status: 'connected' }));
+    clientWs.send(JSON.stringify({ type: 'status', status: 'connected', mode: 'live_stream' }));
   } catch (err: unknown) {
     console.warn('[Live API] Direct Live connection fallback:', err);
-    // If Live API is not enabled for this specific key or encountering quota,
+    // If Live API is encountering quota or network restriction,
     // notify client to use the turn-by-turn conversational audio fallback
     clientWs.send(
       JSON.stringify({
-        type: 'fallbackNotice',
-        message: 'Live streaming handshake ready. Turn-based voice active.',
+        type: 'status',
+        status: 'connected',
+        mode: 'turn_fallback',
+        message: 'Voice engine ready in conversational turn mode.',
       })
     );
   }
@@ -359,8 +482,14 @@ wss.on('connection', async (clientWs: WebSocket) => {
         }
       } else if (msg.type === 'text' && msg.text) {
         if (session && isSessionActive) {
-          session.sendRealtimeInput({
-            text: msg.text,
+          session.sendClientContent({
+            turns: [
+              {
+                role: 'user',
+                parts: [{ text: msg.text }],
+              },
+            ],
+            turnComplete: true,
           });
         }
       } else if (msg.type === 'end') {

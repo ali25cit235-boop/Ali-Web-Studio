@@ -35,10 +35,12 @@ import { siteConfig } from '../data/siteConfig';
 
 export type ConnectionState = 
   | 'idle' 
+  | 'requesting_mic'
   | 'connecting' 
   | 'listening' 
   | 'thinking' 
   | 'speaking' 
+  | 'reconnecting'
   | 'disconnected' 
   | 'error';
 
@@ -178,6 +180,9 @@ export default function VoiceAgentConsole() {
   const audioContextRef = useRef<AudioContext | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const speechRecognitionRef = useRef<any | null>(null);
+  const isCallActiveRef = useRef<boolean>(false);
+  const connectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastUserTextRef = useRef<string>('');
 
   // Session duration timer
   const [sessionSeconds, setSessionSeconds] = useState(0);
@@ -196,7 +201,22 @@ export default function VoiceAgentConsole() {
       }
     };
 
+    // Release microphone immediately if user minimizes the browser or navigates away
+    const handleVisibilityChange = () => {
+      if (document.hidden && isCallActiveRef.current) {
+        cleanupSession();
+      }
+    };
+    const handlePageHide = () => {
+      cleanupSession();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', handlePageHide);
+
     return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handlePageHide);
       cleanupSession();
       if (audioPlayerRef.current) {
         audioPlayerRef.current.close();
@@ -270,18 +290,30 @@ export default function VoiceAgentConsole() {
     }
   };
 
-  // Start Real Voice Session
+  // Start Real Voice Session with dual-engine reliability (Live WebSocket + Conversational Turn Fallback)
   const startVoiceSession = async () => {
-    if (connectionState === 'connecting' || connectionState === 'listening' || connectionState === 'speaking') {
+    // 1. Prevent duplicate concurrent clicks
+    if (
+      connectionState === 'requesting_mic' ||
+      connectionState === 'connecting' ||
+      connectionState === 'listening' ||
+      connectionState === 'speaking' ||
+      connectionState === 'thinking' ||
+      connectionState === 'reconnecting'
+    ) {
       return;
     }
 
-    setErrorMessage(null);
-    setConnectionState('connecting');
+    // 2. Synchronously unlock mobile AudioContext inside the user's tap gesture
+    audioPlayerRef.current?.unlock();
 
-    // 1. Request Microphone Access
+    setErrorMessage(null);
+    setConnectionState('requesting_mic');
+
+    // 3. Request Microphone Access
+    let stream: MediaStream;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
+      stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
@@ -290,36 +322,55 @@ export default function VoiceAgentConsole() {
       });
       micStreamRef.current = stream;
       setMicPermission('granted');
+      const track = stream.getAudioTracks()[0];
+      if (track) {
+        setMicDeviceLabel(track.label || 'Default Microphone');
+      }
     } catch (err: any) {
       console.error('Microphone access error:', err);
       setMicPermission('denied');
       setConnectionState('error');
       setErrorMessage(
         err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError'
-          ? 'Microphone permission was denied. Please allow microphone access in your browser settings to test the AI voice agent.'
-          : 'Could not access microphone. Please check your audio input device or try Text Chat mode.'
+          ? 'Microphone permission was denied. Please allow microphone access in your browser or click "Mic Settings" below. You can also use Text Chat mode.'
+          : 'Could not access microphone hardware. Please check your audio device or try Text Chat mode.'
       );
       return;
     }
 
-    // 2. Setup AudioContext for Capture (Resampled/PCM)
+    isCallActiveRef.current = true;
+    setConnectionState('connecting');
+
+    // 4. Setup AudioContext for Capture (16kHz PCM Int16 LE)
     try {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       const audioCtx = new AudioCtx({ sampleRate: 16000 });
       audioContextRef.current = audioCtx;
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume().catch(() => {});
+      }
 
-      const source = audioCtx.createMediaStreamSource(micStreamRef.current);
-      // ScriptProcessorNode for raw PCM capture buffer
+      const source = audioCtx.createMediaStreamSource(stream);
       const processor = audioCtx.createScriptProcessor(4096, 1, 1);
       processorRef.current = processor;
-
       source.connect(processor);
       processor.connect(audioCtx.destination);
     } catch (audioErr) {
-      console.warn('AudioContext init error:', audioErr);
+      console.warn('AudioContext capture init notice:', audioErr);
     }
 
-    // 3. Connect to Server WebSocket
+    // 5. Connection Timeout Guard: Never get stuck on processing/connecting indefinitely
+    let connectionResolved = false;
+    if (connectTimeoutRef.current) clearTimeout(connectTimeoutRef.current);
+    connectTimeoutRef.current = setTimeout(() => {
+      if (!connectionResolved && isCallActiveRef.current) {
+        console.log('[Voice Agent] Live WebSocket took > 7.5s, engaging conversational voice backup');
+        connectionResolved = true;
+        activateTurnBasedVoiceMode();
+      }
+    }, 7500);
+
+    // 6. Connect to Server WebSocket
     try {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       const wsUrl = `${protocol}//${window.location.host}/api/live-voice`;
@@ -327,38 +378,26 @@ export default function VoiceAgentConsole() {
       wsRef.current = ws;
 
       ws.onopen = () => {
-        setConnectionState('listening');
-
-        // Initial agent greeting if transcript is empty
-        if (messages.length === 0) {
-          addMessage(
-            'agent',
-            "Hello! Welcome to Ali AI Solutions. I'm your AI receptionist demo. What kind of business do you run, or what would you like to automate today?"
-          );
-          // Play introductory welcome speech
-          playTTSGreeting("Hello! Welcome to Ali AI Solutions. I am your AI receptionist demo. What kind of business do you run, or what would you like to automate today?");
-        }
-
-        // Start streaming mic audio to WebSocket
-        if (processorRef.current) {
-          processorRef.current.onaudioprocess = (e) => {
-            if (isMuted || ws.readyState !== WebSocket.OPEN) return;
-            const inputData = e.inputBuffer.getChannelData(0);
-            const pcmBuffer = floatTo16BitPCM(inputData);
-            const base64Audio = arrayBufferToBase64(pcmBuffer);
-            ws.send(JSON.stringify({ type: 'audio', audio: base64Audio }));
-          };
-        }
-
-        // Setup speech recognition for live caller transcript if browser supports Web Speech API
-        setupSpeechRecognition();
+        // Socket connection open, awaiting server ready status
       };
 
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
 
-          if (data.type === 'audio' && data.audio) {
+          if (data.type === 'status') {
+            if (data.status === 'connected') {
+              if (!connectionResolved) {
+                connectionResolved = true;
+                if (connectTimeoutRef.current) clearTimeout(connectTimeoutRef.current);
+                if (data.mode === 'turn_fallback') {
+                  activateTurnBasedVoiceMode();
+                } else {
+                  activateLiveStreamMode(ws);
+                }
+              }
+            }
+          } else if (data.type === 'audio' && data.audio) {
             audioPlayerRef.current?.queueChunk(data.audio);
             if (data.text) {
               addMessage('agent', data.text);
@@ -368,42 +407,96 @@ export default function VoiceAgentConsole() {
           } else if (data.type === 'interrupted') {
             audioPlayerRef.current?.stop();
             setConnectionState('listening');
-          } else if (data.type === 'error') {
-            setErrorMessage(data.message || 'Error occurred during voice session.');
-            setConnectionState('error');
-          } else if (data.type === 'disconnected') {
-            setConnectionState('disconnected');
-          } else if (data.type === 'fallbackNotice') {
-            // Live handshake completed
+          } else if (data.type === 'turnComplete') {
             setConnectionState('listening');
+          } else if (data.type === 'error') {
+            console.warn('[Voice Agent] Live stream error notice:', data.message);
+            if (!connectionResolved) {
+              connectionResolved = true;
+              if (connectTimeoutRef.current) clearTimeout(connectTimeoutRef.current);
+              activateTurnBasedVoiceMode();
+            }
+          } else if (data.type === 'disconnected') {
+            cleanupSession();
           }
         } catch (e) {
-          console.warn('WebSocket message parse error:', e);
+          console.warn('WebSocket message parse notice:', e);
         }
       };
 
       ws.onerror = (e) => {
-        console.warn('WebSocket connection error, activating turn fallback mode:', e);
-        setConnectionState('listening');
+        console.warn('WebSocket connection notice, activating conversational turn engine:', e);
+        if (!connectionResolved) {
+          connectionResolved = true;
+          if (connectTimeoutRef.current) clearTimeout(connectTimeoutRef.current);
+          activateTurnBasedVoiceMode();
+        }
       };
 
       ws.onclose = () => {
-        if (connectionState !== 'error') {
-          setConnectionState('disconnected');
+        if (!connectionResolved && isCallActiveRef.current) {
+          connectionResolved = true;
+          if (connectTimeoutRef.current) clearTimeout(connectTimeoutRef.current);
+          activateTurnBasedVoiceMode();
         }
       };
     } catch (wsErr) {
-      console.warn('WebSocket launch failed:', wsErr);
-      setConnectionState('listening');
+      console.warn('WebSocket connection initiation failed, activating conversational turn engine:', wsErr);
+      if (!connectionResolved) {
+        connectionResolved = true;
+        if (connectTimeoutRef.current) clearTimeout(connectTimeoutRef.current);
+        activateTurnBasedVoiceMode();
+      }
     }
   };
 
-  // Web Speech API fallback for live user transcript
+  // Activate Real-Time Streaming Audio Mode
+  const activateLiveStreamMode = (ws: WebSocket) => {
+    setConnectionState('listening');
+
+    if (messages.length === 0) {
+      const greeting = "Hello! Welcome to Ali AI Solutions. I'm your AI receptionist demo. What kind of business do you run, or what would you like to automate today?";
+      addMessage('agent', greeting);
+      playTTSGreeting(greeting);
+    }
+
+    if (processorRef.current) {
+      processorRef.current.onaudioprocess = (e) => {
+        if (isMuted || ws.readyState !== WebSocket.OPEN) return;
+        const inputData = e.inputBuffer.getChannelData(0);
+        const pcmBuffer = floatTo16BitPCM(inputData);
+        const base64Audio = arrayBufferToBase64(pcmBuffer);
+        ws.send(JSON.stringify({ type: 'audio', audio: base64Audio }));
+      };
+    }
+
+    setupSpeechRecognition();
+  };
+
+  // Activate Turn-Based Conversational Voice Mode (Resilient backup that works on all devices & networks)
+  const activateTurnBasedVoiceMode = () => {
+    setConnectionState('listening');
+
+    if (messages.length === 0) {
+      const greeting = "Hello! Welcome to Ali AI Solutions. I'm your AI receptionist demo. What kind of business do you run, or what would you like to automate today?";
+      addMessage('agent', greeting);
+      playTTSGreeting(greeting);
+    }
+
+    setupSpeechRecognition();
+  };
+
+  // Web Speech API for live transcription and turn-based voice triggering
   const setupSpeechRecognition = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) return;
 
     try {
+      if (speechRecognitionRef.current) {
+        speechRecognitionRef.current.onend = null;
+        try { speechRecognitionRef.current.stop(); } catch {}
+      }
+
       const recognition = new SpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = false;
@@ -415,65 +508,78 @@ export default function VoiceAgentConsole() {
           const spokenText = lastResult[0].transcript.trim();
           if (spokenText) {
             addMessage('user', spokenText);
-            // Send text to server for conversational processing
-            handleSpokenTurn(spokenText);
+            // If live WebSocket is streaming, optionally send text turn or let turn engine handle it
+            if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+              wsRef.current.send(JSON.stringify({ type: 'text', text: spokenText }));
+            } else {
+              handleSpokenTurn(spokenText);
+            }
           }
         }
       };
 
-      recognition.onerror = () => {
-        // silent recovery
+      recognition.onerror = (e: any) => {
+        console.warn('Speech recognition notice:', e?.error);
+      };
+
+      // Automatically maintain listening state as long as the call is active
+      recognition.onend = () => {
+        if (isCallActiveRef.current && speechRecognitionRef.current === recognition) {
+          try {
+            recognition.start();
+          } catch {
+            // ignore
+          }
+        }
       };
 
       recognition.start();
       speechRecognitionRef.current = recognition;
-    } catch {
-      // not supported
+    } catch (err) {
+      console.warn('SpeechRecognition initialization notice:', err);
     }
   };
 
-  // Handle a user spoken sentence
+  // Handle a user spoken turn via /api/voice-turn
   const handleSpokenTurn = async (userText: string) => {
+    if (!userText.trim() || !isCallActiveRef.current) return;
     setConnectionState('thinking');
+    lastUserTextRef.current = userText;
+
     try {
       const history = messages.map((m) => ({
         role: m.sender === 'user' ? 'user' : 'model',
         content: m.text,
       }));
-      history.push({ role: 'user', content: userText });
 
-      const res = await fetch('/api/chat', {
+      const res = await fetch('/api/voice-turn', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: history,
+          userText,
           languagePreference: language,
+          voiceName: 'Kore',
         }),
       });
 
       if (!res.ok) {
-        throw new Error('Failed to generate response');
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Voice response processing failed');
       }
 
       const data = await res.json();
       const reply = data.reply || 'I understand. Could you tell me more about your requirements?';
       addMessage('agent', reply);
 
-      // Synthesize audio response with female voice 'Kore'
-      const ttsRes = await fetch('/api/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: reply, voiceName: 'Kore' }),
-      });
-
-      if (ttsRes.ok) {
-        const ttsData = await ttsRes.json();
-        if (ttsData.audioBase64) {
-          audioPlayerRef.current?.queueChunk(ttsData.audioBase64);
-        }
+      if (data.audioBase64) {
+        audioPlayerRef.current?.queueChunk(data.audioBase64);
+      } else {
+        setConnectionState('listening');
       }
     } catch (err: any) {
       console.error('Spoken turn error:', err);
+      setErrorMessage(err.message || 'Could not process voice response. Please speak again or try Text Chat.');
       setConnectionState('listening');
     }
   };
@@ -493,21 +599,31 @@ export default function VoiceAgentConsole() {
         }
       }
     } catch {
-      // ignore
+      // quiet fail on greeting audio
     }
   };
 
-  // End voice session and cleanup
+  // Reliable End Call and Complete Resource Release (stops tracks, closes ws, shuts off green mic dot)
   const cleanupSession = () => {
+    isCallActiveRef.current = false;
+
+    if (connectTimeoutRef.current) {
+      clearTimeout(connectTimeoutRef.current);
+      connectTimeoutRef.current = null;
+    }
+
     if (wsRef.current) {
-      if (wsRef.current.readyState === WebSocket.OPEN) {
-        wsRef.current.send(JSON.stringify({ type: 'end' }));
-      }
-      wsRef.current.close();
+      try {
+        if (wsRef.current.readyState === WebSocket.OPEN) {
+          wsRef.current.send(JSON.stringify({ type: 'end' }));
+        }
+        wsRef.current.close();
+      } catch {}
       wsRef.current = null;
     }
 
     if (speechRecognitionRef.current) {
+      speechRecognitionRef.current.onend = null;
       try {
         speechRecognitionRef.current.stop();
       } catch {}
@@ -515,17 +631,24 @@ export default function VoiceAgentConsole() {
     }
 
     if (processorRef.current) {
-      processorRef.current.disconnect();
+      try {
+        processorRef.current.disconnect();
+      } catch {}
       processorRef.current = null;
     }
 
     if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-      audioContextRef.current.close();
+      try {
+        audioContextRef.current.close();
+      } catch {}
       audioContextRef.current = null;
     }
 
+    // Crucial: stop all media tracks immediately so the privacy indicator green dot turns off!
     if (micStreamRef.current) {
-      micStreamRef.current.getTracks().forEach((t) => t.stop());
+      try {
+        micStreamRef.current.getTracks().forEach((track) => track.stop());
+      } catch {}
       micStreamRef.current = null;
     }
 
@@ -547,14 +670,19 @@ export default function VoiceAgentConsole() {
     setConnectionState('idle');
   };
 
-  // Handle Text Chat message submission
-  const handleSendTextMessage = async (e?: React.FormEvent) => {
+  // Handle Text Chat message submission (with retry capability)
+  const handleSendTextMessage = async (e?: React.FormEvent, retryText?: string) => {
     if (e) e.preventDefault();
-    if (!chatInput.trim() || isTextLoading) return;
+    const userText = (retryText || chatInput).trim();
+    if (!userText || isTextLoading) return;
 
-    const userText = chatInput.trim();
-    setChatInput('');
-    addMessage('user', userText);
+    if (!retryText) setChatInput('');
+    setErrorMessage(null);
+    lastUserTextRef.current = userText;
+
+    if (!retryText) {
+      addMessage('user', userText);
+    }
     setIsTextLoading(true);
 
     try {
@@ -582,7 +710,7 @@ export default function VoiceAgentConsole() {
       const reply = data.reply || 'How else can I assist with your business automation?';
       addMessage('agent', reply);
 
-      // Optionally speak reply if user has audio enabled
+      // Optionally speak reply if user has audio unmuted
       if (!isMuted) {
         fetch('/api/tts', {
           method: 'POST',
@@ -608,10 +736,12 @@ export default function VoiceAgentConsole() {
   // State color badges
   const stateBadge = {
     idle: { label: 'Ready to Connect', color: 'bg-slate-500/10 text-slate-300 border-slate-500/20' },
+    requesting_mic: { label: 'Requesting Mic Access...', color: 'bg-sky-500/10 text-sky-300 border-sky-500/20 animate-pulse' },
     connecting: { label: 'Connecting to Voice Core...', color: 'bg-amber-500/10 text-amber-300 border-amber-500/20 animate-pulse' },
     listening: { label: 'Listening to You', color: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' },
     thinking: { label: 'Thinking / Processing', color: 'bg-purple-500/10 text-purple-300 border-purple-500/20 animate-pulse' },
     speaking: { label: 'AI Speaking (Kore)', color: 'bg-blue-500/10 text-blue-300 border-blue-500/20' },
+    reconnecting: { label: 'Reconnecting...', color: 'bg-amber-500/10 text-amber-300 border-amber-500/20 animate-pulse' },
     disconnected: { label: 'Conversation Ended', color: 'bg-slate-500/10 text-slate-400 border-slate-500/20' },
     error: { label: 'Session Notice', color: 'bg-rose-500/10 text-rose-300 border-rose-500/20' },
   }[connectionState];
@@ -739,18 +869,54 @@ export default function VoiceAgentConsole() {
 
             {/* Error Message Banner */}
             {errorMessage && (
-              <div className="p-3 bg-rose-500/10 border-b border-rose-500/20 px-5 flex items-center justify-between text-xs text-rose-300">
+              <div className="p-3.5 bg-rose-500/10 border-b border-rose-500/20 px-5 flex flex-wrap items-center justify-between gap-3 text-xs text-rose-300">
                 <div className="flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-                  <span>{errorMessage}</span>
+                  <span className="font-medium">{errorMessage}</span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setErrorMessage(null)}
-                  className="text-rose-400 hover:text-white underline cursor-pointer"
-                >
-                  Dismiss
-                </button>
+                <div className="flex items-center gap-2">
+                  {activeTab === 'voice' ? (
+                    <button
+                      type="button"
+                      onClick={startVoiceSession}
+                      className="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-500/30 font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      <span>Retry Call</span>
+                    </button>
+                  ) : lastUserTextRef.current ? (
+                    <button
+                      type="button"
+                      onClick={() => handleSendTextMessage(undefined, lastUserTextRef.current)}
+                      className="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-500/30 font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      <span>Retry Message</span>
+                    </button>
+                  ) : null}
+
+                  {activeTab === 'voice' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setErrorMessage(null);
+                        setActiveTab('chat');
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 border border-blue-500/30 font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <MessageSquare className="w-3 h-3" />
+                      <span>Try Text Chat</span>
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => setErrorMessage(null)}
+                    className="text-slate-400 hover:text-white underline text-xs cursor-pointer ml-2"
+                  >
+                    Dismiss
+                  </button>
+                </div>
               </div>
             )}
 
@@ -815,14 +981,24 @@ export default function VoiceAgentConsole() {
                       {/* Main Orb Center / Click to Talk */}
                       <button
                         type="button"
-                        onClick={connectionState === 'idle' || connectionState === 'disconnected' || connectionState === 'error' ? startVoiceSession : cleanupSession}
+                        onClick={
+                          connectionState === 'idle' || connectionState === 'disconnected' || connectionState === 'error'
+                            ? startVoiceSession
+                            : connectionState === 'connecting' || connectionState === 'requesting_mic'
+                            ? cleanupSession
+                            : cleanupSession
+                        }
                         className={`w-36 h-36 sm:w-40 sm:h-40 rounded-full border flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300 shadow-2xl cursor-pointer ${
                           connectionState === 'speaking'
                             ? 'bg-gradient-to-tr from-blue-900/60 via-purple-900/60 to-black border-blue-400/60 shadow-blue-500/30 scale-105'
                             : connectionState === 'listening'
                             ? 'bg-gradient-to-tr from-emerald-900/40 via-sky-900/40 to-black border-emerald-400/50 shadow-emerald-500/20'
-                            : connectionState === 'connecting' || connectionState === 'thinking'
+                            : connectionState === 'connecting' || connectionState === 'requesting_mic' || connectionState === 'reconnecting'
+                            ? 'bg-gradient-to-tr from-amber-900/50 via-blue-900/50 to-black border-amber-400/50 animate-pulse'
+                            : connectionState === 'thinking'
                             ? 'bg-gradient-to-tr from-purple-900/50 via-blue-900/50 to-black border-purple-400/50 animate-pulse'
+                            : connectionState === 'error'
+                            ? 'bg-gradient-to-tr from-rose-950/60 via-slate-900 to-black border-rose-500/50'
                             : 'bg-[#111827] border-white/10 hover:border-blue-400/40 hover:bg-[#141E33] shadow-black/80'
                         }`}
                         aria-label="Microphone Voice Trigger"
@@ -845,10 +1021,25 @@ export default function VoiceAgentConsole() {
                             <Mic className="w-10 h-10 text-emerald-400 animate-pulse" />
                             <span className="text-[11px] font-mono text-emerald-300">Listening...</span>
                           </div>
-                        ) : connectionState === 'connecting' || connectionState === 'thinking' ? (
+                        ) : connectionState === 'requesting_mic' ? (
+                          <div className="flex flex-col items-center gap-1.5 z-10">
+                            <Mic className="w-10 h-10 text-sky-400 animate-pulse" />
+                            <span className="text-[11px] font-mono text-sky-300">Requesting Mic...</span>
+                          </div>
+                        ) : connectionState === 'connecting' || connectionState === 'reconnecting' ? (
+                          <div className="flex flex-col items-center gap-1.5 z-10">
+                            <Bot className="w-10 h-10 text-amber-400 animate-bounce" />
+                            <span className="text-[11px] font-mono text-amber-300">Connecting...</span>
+                          </div>
+                        ) : connectionState === 'thinking' ? (
                           <div className="flex flex-col items-center gap-1.5 z-10">
                             <Bot className="w-10 h-10 text-purple-400 animate-bounce" />
                             <span className="text-[11px] font-mono text-purple-300">Processing...</span>
+                          </div>
+                        ) : connectionState === 'error' ? (
+                          <div className="flex flex-col items-center gap-1.5 z-10 text-rose-300">
+                            <AlertCircle className="w-9 h-9 text-rose-400" />
+                            <span className="text-[11px] font-mono font-semibold">Tap to Retry</span>
                           </div>
                         ) : (
                           <div className="flex flex-col items-center gap-2 z-10">
@@ -864,17 +1055,23 @@ export default function VoiceAgentConsole() {
                     <p className="text-xs text-slate-400 mt-3 text-center max-w-sm">
                       {connectionState === 'idle'
                         ? 'Click the orb or button below to speak directly with the AI receptionist.'
+                        : connectionState === 'requesting_mic'
+                        ? 'Please approve the browser microphone prompt on your device.'
+                        : connectionState === 'connecting'
+                        ? 'Connecting securely to the AI Voice core...'
                         : connectionState === 'listening'
                         ? 'Speak naturally. The receptionist listens and adapts to your language.'
                         : connectionState === 'speaking'
                         ? 'AI receptionist is speaking. Start talking at any time to interrupt.'
-                        : 'Connecting securely to the Ali AI Solutions voice model...'}
+                        : connectionState === 'error'
+                        ? 'Connection notice. Click Retry Voice Agent to reconnect or use Text Chat.'
+                        : 'Call ended. Click Start Again or Test Voice Agent to talk again.'}
                     </p>
                   </div>
 
                   {/* Primary Voice Action Bar */}
                   <div className="flex flex-wrap items-center justify-center gap-3">
-                    {connectionState === 'idle' || connectionState === 'disconnected' || connectionState === 'error' ? (
+                    {connectionState === 'idle' || connectionState === 'disconnected' ? (
                       <button
                         type="button"
                         onClick={startVoiceSession}
@@ -883,6 +1080,43 @@ export default function VoiceAgentConsole() {
                         <Mic className="w-4 h-4" />
                         <span>Test Voice Agent</span>
                       </button>
+                    ) : connectionState === 'requesting_mic' || connectionState === 'connecting' || connectionState === 'reconnecting' ? (
+                      <div className="flex items-center gap-2.5">
+                        <button
+                          type="button"
+                          disabled
+                          className="px-6 py-3.5 rounded-2xl font-semibold text-sm text-white bg-blue-600/50 flex items-center gap-2 cursor-wait"
+                        >
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          <span>{connectionState === 'requesting_mic' ? 'Requesting Mic...' : 'Connecting...'}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cleanupSession}
+                          className="px-4 py-3.5 rounded-2xl font-medium text-xs text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-colors cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : connectionState === 'error' ? (
+                      <div className="flex items-center gap-2.5">
+                        <button
+                          type="button"
+                          onClick={startVoiceSession}
+                          className="px-6 py-3.5 rounded-2xl font-semibold text-sm text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-blue-500/25 transition-all flex items-center gap-2 cursor-pointer active:scale-95"
+                        >
+                          <RotateCcw className="w-4 h-4" />
+                          <span>Retry Voice Agent</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab('chat')}
+                          className="px-4 py-3.5 rounded-2xl font-medium text-xs text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-colors cursor-pointer flex items-center gap-1.5"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          <span>Try Text Chat</span>
+                        </button>
+                      </div>
                     ) : (
                       <>
                         <button
@@ -905,7 +1139,7 @@ export default function VoiceAgentConsole() {
                           className="px-5 py-3 rounded-xl font-semibold text-xs text-white bg-rose-600 hover:bg-rose-500 transition-colors flex items-center gap-2 cursor-pointer active:scale-95"
                         >
                           <PhoneOff className="w-4 h-4" />
-                          <span>End Conversation</span>
+                          <span>End Call</span>
                         </button>
                       </>
                     )}
