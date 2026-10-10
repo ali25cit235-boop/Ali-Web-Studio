@@ -2,6 +2,7 @@ import { useState } from 'react';
 import CustomCursor from './components/CustomCursor';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
+import VoiceAgentConsole from './components/VoiceAgentConsole';
 import ProblemsSection from './components/ProblemsSection';
 import VoiceServices from './components/VoiceServices';
 import HowItWorks from './components/HowItWorks';
@@ -91,6 +92,9 @@ export default function App() {
       <main id="main-content">
         {/* Section B: Hero Section */}
         <Hero onContactClick={() => scrollToContact()} />
+
+        {/* Real Working Interactive Voice Agent Application */}
+        <VoiceAgentConsole />
 
         {/* Section C: Problem & Value Proposition */}
         <ProblemsSection onSolutionFinderClick={scrollToSolutionFinder} />

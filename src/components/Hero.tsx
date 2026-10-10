@@ -99,11 +99,11 @@ export default function Hero({ onContactClick }: HeroProps) {
             <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
               <button
                 type="button"
-                onClick={() => scrollTo('voice-agents')}
+                onClick={() => scrollTo('demo-console')}
                 className="px-6 py-3.5 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-[#4F8CFF] to-[#8B5CF6] hover:from-[#3B7CFF] hover:to-[#7C3AED] shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95"
               >
-                <span>Explore AI Voice Agents</span>
-                <ArrowDown className="w-4 h-4" />
+                <Mic className="w-4 h-4" />
+                <span>Test Voice Agent</span>
               </button>
 
               <button

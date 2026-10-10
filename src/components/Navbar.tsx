@@ -36,7 +36,7 @@ export default function Navbar({ onOpenWhatsApp, onContactClick }: NavbarProps) 
 
   const navLinks = [
     { label: "Home", id: "hero" },
-    { label: "AI Voice Agents", id: "voice-agents" },
+    { label: "AI Voice Agent", id: "demo-console" },
     { label: "Solutions", id: "solution-finder" },
     { label: "Website Development", id: "websites" },
     { label: "Demos", id: "demos" },
