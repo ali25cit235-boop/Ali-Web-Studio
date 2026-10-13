@@ -2,14 +2,15 @@ import { useState } from 'react';
 import CustomCursor from './components/CustomCursor';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
-import VoiceAgentConsole from './components/VoiceAgentConsole';
+import ReceptionistCapabilities from './components/ReceptionistCapabilities';
 import ProblemsSection from './components/ProblemsSection';
 import VoiceServices from './components/VoiceServices';
 import HowItWorks from './components/HowItWorks';
+import BusinessUseCases from './components/BusinessUseCases';
 import SolutionFinder from './components/SolutionFinder';
+import FreeDemoSection from './components/FreeDemoSection';
 import WebsiteDevSection from './components/WebsiteDevSection';
 import DemoGallery from './components/DemoGallery';
-import FutureVoiceDemo from './components/FutureVoiceDemo';
 import WhyAliAI from './components/WhyAliAI';
 import FAQSection from './components/FAQSection';
 import ContactSection from './components/ContactSection';
@@ -91,45 +92,48 @@ export default function App() {
       {/* Main Content Landmark */}
       <main id="main-content">
         {/* Section B: Hero Section */}
-        <Hero onContactClick={() => scrollToContact()} />
+        <Hero />
 
-        {/* Real Working Interactive Voice Agent Application */}
-        <VoiceAgentConsole />
+        {/* Section C: Your AI Receptionist. Your Business Rules. */}
+        <ReceptionistCapabilities />
 
-        {/* Section C: Problem & Value Proposition */}
+        {/* Section D: Problem & Value Proposition */}
         <ProblemsSection onSolutionFinderClick={scrollToSolutionFinder} />
 
-        {/* Section D: AI Voice Agent Services (Primary) */}
+        {/* Section E: AI Voice Agent Services */}
         <VoiceServices onSelectService={(service) => scrollToContact(service)} />
 
-        {/* Section E: How It Works */}
+        {/* Section F: How It Works — 4-Step Personalized Demo Journey */}
         <HowItWorks />
 
-        {/* Section F: Business-Specific Solution Finder */}
+        {/* Section G: Business Use Cases across 7 Industries */}
+        <BusinessUseCases />
+
+        {/* Section H: Business-Specific Solution Finder */}
         <SolutionFinder
           onDiscussSolution={(bizType, goal) => scrollToContact(goal, bizType)}
           onPreviewDemo={handlePreviewDemoById}
         />
 
-        {/* Section G: Website Development */}
+        {/* Section I: Prominent Free Demo Section */}
+        <FreeDemoSection />
+
+        {/* Section J: Secondary Service — Website Development */}
         <WebsiteDevSection onExploreDemos={scrollToDemos} />
 
-        {/* Section H: Website Demo Gallery */}
+        {/* Section K: Website Demo Gallery */}
         <DemoGallery
           onSelectDemo={(demo) => setSelectedDemo(demo)}
           onRequestSimilar={(title) => scrollToContact(`Website: Similar to ${title}`)}
         />
 
-        {/* Section I: Future Voice Agent Demo Area */}
-        <FutureVoiceDemo />
-
-        {/* Section J: Why Ali AI Solutions */}
+        {/* Section L: Why Ali AI Solutions */}
         <WhyAliAI />
 
-        {/* Section K: Frequently Asked Questions */}
+        {/* Section M: Frequently Asked Questions */}
         <FAQSection />
 
-        {/* Section L: Contact & Project Enquiry Form */}
+        {/* Section N: Contact & Project Enquiry Form */}
         <ContactSection
           preselectedService={preselectedService}
           preselectedBusinessType={preselectedBusinessType}

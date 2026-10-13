@@ -66,9 +66,9 @@ export const siteConfig = {
     tagline: "AI Voice Agents. Smarter Business. Better Experiences.",
     supportingStatement:
       "Helping businesses handle customer calls, capture leads, answer common questions, and build a stronger online presence with AI-powered solutions.",
-    heroHeadline: "Never Miss an Opportunity to Connect.",
+    heroHeadline: "Meet Your Business's AI Voice Assistant",
     heroSubheadline:
-      "AI voice agents that help businesses handle customer calls, answer common questions, capture enquiries, and stay responsive — even when your team is busy.",
+      "Answer customer enquiries, capture leads, and help your business stay responsive with a custom AI Voice Agent designed around your services and workflow.",
     problemHeadline: "Your Business Deserves a Smarter Way to Respond.",
     websiteHeadline: "A Website That Works as Hard as Your Business.",
     whyHeadline: "Technology Should Solve Real Business Problems.",
@@ -85,14 +85,16 @@ export const siteConfig = {
     whatsappNumber: "923106449454",
     whatsappDisplay: "+92 310 6449454",
     whatsappUrl:
-      "https://wa.me/923106449454?text=Hi%20Ali%20AI%20Solutions%2C%20I'd%20like%20to%20discuss%20an%20AI%20voice%20agent%20or%20website%20solution.",
+      "https://wa.me/923106449454?text=Hi%20Ali%20AI%20Solutions!%20I'd%20like%20to%20request%20a%20free%20personalized%20AI%20Voice%20Agent%20demo%20for%20my%20business.%20My%20business%20name%20is%3A%20____.%20My%20business%20type%20is%3A%20____.%20I'd%20like%20the%20agent%20to%20help%20with%3A%20____.",
+    whatsappDemoUrl:
+      "https://wa.me/923106449454?text=Hi%20Ali%20AI%20Solutions!%20I'd%20like%20to%20request%20a%20free%20personalized%20AI%20Voice%20Agent%20demo%20for%20my%20business.%20My%20business%20name%20is%3A%20____.%20My%20business%20type%20is%3A%20____.%20I'd%20like%20the%20agent%20to%20help%20with%3A%20____.",
   },
 
   // Section C: Problems vs AI Voice Agent Solutions
   problemComparisons: [
     {
       challenge: "Missed customer calls during rush hours or staff meetings",
-      outcome: "24/7 polite greeting with instant call pickup without busy tones",
+      outcome: "Polite, consistent call pickup without busy tones or rushed staff",
     },
     {
       challenge: "Staff answering the same opening hours & pricing questions 30x a day",
@@ -177,7 +179,7 @@ export const siteConfig = {
     {
       id: "after-hours",
       title: "After-Hours Call Assistant",
-      subtitle: "24/7 Night & Weekend Inquiry Protection",
+      subtitle: "Night & Weekend Inquiry Protection",
       description:
         "Helps businesses collect customer enquiries outside normal working hours and explains available next steps using approved business guidelines.",
       benefits: [
@@ -197,7 +199,7 @@ export const siteConfig = {
         "A fully tailored conversation workflow built around your company's proprietary operational steps, external software systems, and communication rules.",
       benefits: [
         "Custom dialog flows matching your exact operational workflow",
-        "Integrates with your existing phone trunks or VoIP system",
+        "Integrates with your compatible business phone number or VoIP system",
         "Custom tone, accent, and compliance guidelines",
         "Multi-stage validation and edge-case handling",
       ],
@@ -206,39 +208,55 @@ export const siteConfig = {
     },
   ] as VoiceAgentService[],
 
-  // Section E: How It Works
+  // Section E: How It Works — 4-Step Personalized Demo Journey
   process: [
     {
       step: "01",
-      title: "Understand Your Business",
-      subtitle: "Call Audit & Goal Alignment",
+      title: "Tell Us About Your Business",
+      subtitle: "Share Context & Requirements",
       description:
-        "We identify your typical call types, most frequent customer questions, peak hours, and desired operational outcomes.",
-      details: ["Call volume audit", "FAQ inventory", "Desired escalation rules"],
+        "Share your business type, services, common questions, and goals through WhatsApp.",
+      details: [
+        "Business type & services overview",
+        "Frequent caller inquiries & pain points",
+        "Desired call handling workflow",
+      ],
     },
     {
       step: "02",
-      title: "Design the Agent",
-      subtitle: "Conversation Flow & Guardrails",
+      title: "Get a Personalized Demo",
+      subtitle: "Tailored to Your Operations",
       description:
-        "We map out polite, natural conversation flows, approved company information, tone of voice, and human transfer criteria.",
-      details: ["Script architecture", "Edge-case safeguards", "Tone & pacing alignment"],
+        "We prepare a demo tailored to your business requirements so you can explore how your AI Voice Agent could work.",
+      details: [
+        "Custom agent script & knowledge base",
+        "Configured business rules & brand tone",
+        "Realistic inquiry handling scenarios",
+      ],
     },
     {
       step: "03",
-      title: "Configure and Test",
-      subtitle: "Provider Setup & Scenario Testing",
+      title: "Test Your Demo",
+      subtitle: "Private Review & Evaluation",
       description:
-        "The voice agent is configured on the chosen platform and thoroughly tested across realistic customer call scenarios before going near callers.",
-      details: ["Platform configuration", "Multi-voice stress testing", "Webhook & calendar checks"],
+        "We share your demo separately so you can try the experience before deciding whether to proceed.",
+      details: [
+        "Private testing link or preview session",
+        "No public website exposure",
+        "Iterative feedback & tone adjustments",
+      ],
     },
     {
       step: "04",
-      title: "Launch and Improve",
-      subtitle: "Controlled Rollout & Refinement",
+      title: "Deploy When You're Ready",
+      subtitle: "Setup & Phone Configuration",
       description:
-        "After agreed setup and verification, the solution is launched in a controlled manner and continually refined based on real caller feedback.",
-      details: ["Controlled activation", "Transcript review", "Ongoing prompt refinement"],
+        "After approval, we help configure your AI Voice Agent and discuss connecting a compatible business phone number and required integrations.",
+      details: [
+        "Compatible telephony & number setup",
+        "Optional calendar/CRM webhook hooks",
+        "Full staff handoff & ongoing support",
+      ],
     },
   ] as ProcessStep[],
 

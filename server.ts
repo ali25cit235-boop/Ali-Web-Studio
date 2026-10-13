@@ -1,61 +1,50 @@
 import express from 'express';
 import http from 'http';
-import { WebSocketServer, WebSocket } from 'ws';
 import path from 'path';
 import dotenv from 'dotenv';
 import { GoogleGenAI, Modality, Type } from '@google/genai';
+import { WebSocketServer, WebSocket } from 'ws';
 
 dotenv.config();
 
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const app = express();
 const server = http.createServer(app);
+const PORT = parseInt(process.env.PORT || '3000', 10);
 
 // JSON body parser with generous limit for audio payloads
-app.use(express.json({ limit: '15mb' }));
+app.use(express.json({ limit: '20mb' }));
 
-// Initialize Google Gen AI client with mandatory telemetry header
 const apiKey = process.env.GEMINI_API_KEY || '';
+if (!apiKey) {
+  console.warn('[Warning] GEMINI_API_KEY is not set in environment. Voice and Chat features will report key missing.');
+}
+
 const ai = new GoogleGenAI({
   apiKey,
   httpOptions: {
     headers: {
-      'User-Agent': 'aistudio-build',
+      'User-Agent': 'AliAISolutions-VoiceReceptionist/1.0',
     },
   },
 });
 
-const RECEPTIONIST_SYSTEM_INSTRUCTION = `You are the friendly, professional AI receptionist and sales assistant for Ali AI Solutions.
+// Receptionist System Instruction
+const RECEPTIONIST_SYSTEM_INSTRUCTION = `You are the polite, welcoming, and knowledgeable AI voice and chat receptionist for Ali AI Solutions (aliaisolutions.com), an AI automation and web studio agency founded by Ali Raza in Pakistan, serving global clients.
 
-Your purpose is to demonstrate AI voice agents and help potential clients understand our services.
+Your job is to greet callers or visitors warmly, answer questions about agency services, qualify prospective clients, and offer a consultation or contact follow-up.
 
-Speak naturally, clearly, and warmly. Be concise and conversational. Avoid robotic or excessively long answers.
+Key Agency Services:
+1. AI Voice Agents & Receptionists for automated appointment scheduling, customer inquiries, and lead qualification.
+2. Website Development for modern, high-performance, responsive business websites and web applications.
+3. Business Automation for streamlining repetitive administrative workflows, CRM sync, and reminders.
+4. Custom AI Assistants & Chatbots tailored to industry-specific operations.
 
-Use English by default. Detect the visitor's language and respond in that language whenever supported. If they switch languages, adapt naturally. Support English, Urdu, Hindi, Arabic, Spanish, French, and any other supported language.
-
-Ask only one question at a time. Listen carefully and do not interrupt unnecessarily.
-
-Our services are:
-1. AI Voice Agents for handling incoming calls, answering common questions, qualifying leads, and routing enquiries.
-2. Website Development for professional, responsive business websites.
-3. Business Automation for reducing repetitive administrative tasks.
-4. Custom AI Assistants for suitable business workflows.
-
-Start with a brief greeting and ask what kind of business the visitor runs or what they would like to automate.
-
-Help the visitor understand the relevant service. Ask about their business type, the problem they want to solve, their preferred features, and any important requirements.
-
-Do not make up prices, delivery timelines, customer results, testimonials, technical capabilities, or integrations. If you do not know something, say the team can confirm it.
-
-Do not claim that you have booked a meeting, sent an email, sent a WhatsApp message, or notified a human unless a real backend action confirms success.
-
-Clearly identify yourself as an AI assistant when asked. Do not pretend to be a human employee.
-
-If the visitor wants to speak to the agency team, offer to collect their contact details with their permission.
-
-Never ask for passwords, payment-card information, identity documents, or unnecessary sensitive information.
-
-Do not pressure visitors to buy. Help them understand their options.`;
+Tone and Demeanor:
+- Friendly, warm, confident, professional, and concise.
+- Keep spoken responses short and natural (1 to 2 sentences per turn), ideal for real-time voice conversations.
+- Do not make up prices or guaranteed deadlines. State that custom quotes and timelines depend on project scope.
+- Clearly identify as an AI assistant when asked.
+- Offer to collect contact details (name, email or WhatsApp number) for follow-up if the visitor expresses genuine interest.`;
 
 // Format and sanitize chat history so Gemini never rejects turn sequence or first role
 function formatAndSanitizeContents(messages: Array<{ role: string; content?: string; text?: string }>) {
@@ -112,7 +101,7 @@ async function generateReceptionistReply(contents: any[], systemInstruction: str
         return text;
       }
     } catch (err: any) {
-      console.warn(`[Gemini] Model ${model} returned error, trying fallback:`, err?.message || err);
+      console.warn(`[Gemini] Model ${model} returned notice, trying fallback:`, err?.message || err);
       lastError = err;
     }
   }
@@ -121,20 +110,19 @@ async function generateReceptionistReply(contents: any[], systemInstruction: str
 }
 
 // Resilient TTS speech synthesis helper
-async function synthesizeSpeech(text: string, voiceName = 'Kore'): Promise<string> {
-  const modelsToTry = ['gemini-3.8-flash-lite-tts', 'gemini-3.8-flash-tts'];
-  let lastError: any = null;
+async function synthesizeSpeech(text: string, voiceName = 'Kore'): Promise<string | null> {
+  const modelsToTry = ['gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts'];
 
   for (const model of modelsToTry) {
     try {
-      const response = await ai.models.generateContent({
+      const ttsPromise = ai.models.generateContent({
         model,
         contents: [
           {
             role: 'user',
             parts: [
               {
-                text,
+                text: text.slice(0, 400),
                 speechMetadata: {
                   style: 'Friendly, natural, professional female receptionist',
                 },
@@ -152,18 +140,80 @@ async function synthesizeSpeech(text: string, voiceName = 'Kore'): Promise<strin
         },
       });
 
+      // 4.5s timeout per model attempt so turns stay fast and conversational
+      const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 4500));
+      const response = await Promise.race([ttsPromise, timeoutPromise]);
+      if (!response) {
+        continue;
+      }
+
       const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
       if (base64Audio) {
         return base64Audio;
       }
     } catch (err: any) {
-      console.warn(`[TTS] Model ${model} failed, trying next:`, err?.message || err);
-      lastError = err;
+      console.warn(`[TTS] Model ${model} notice:`, err?.message || err);
     }
   }
 
-  throw lastError || new Error('TTS voice synthesis unavailable');
+  // Fallback to Live Session rapid streaming if dedicated TTS models are on quota limit
+  try {
+    return await new Promise<string | null>((resolve) => {
+      let resolved = false;
+      const chunks: string[] = [];
+      ai.live.connect({
+        model: 'gemini-3.8-live',
+        config: {
+          responseModalities: [Modality.AUDIO],
+          speechConfig: {
+            voiceConfig: { prebuiltVoiceConfig: { voiceName: voiceName || 'Kore' } },
+          },
+        },
+        callbacks: {
+          onmessage: (msg: any) => {
+            const chunk = msg.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
+            if (chunk) chunks.push(chunk);
+            if (msg.serverContent?.turnComplete) {
+              if (!resolved) {
+                resolved = true;
+                resolve(chunks.length > 0 ? chunks[0] : null);
+              }
+            }
+          },
+          onerror: () => {
+            if (!resolved) {
+              resolved = true;
+              resolve(null);
+            }
+          },
+          onclose: () => {
+            if (!resolved) {
+              resolved = true;
+              resolve(chunks.length > 0 ? chunks[0] : null);
+            }
+          },
+        },
+      }).then((sess) => {
+        sess.sendClientContent({
+          turns: [{ role: 'user', parts: [{ text: `Say warmly as receptionist: ${text.slice(0, 250)}` }] }],
+          turnComplete: true,
+        });
+        setTimeout(() => {
+          if (!resolved) {
+            resolved = true;
+            try { sess.close(); } catch {}
+            resolve(chunks.length > 0 ? chunks[0] : null);
+          }
+        }, 3500);
+      }).catch(() => resolve(null));
+    });
+  } catch {}
+
+  return null; // Signals client to use zero-latency browser speech synthesis fallback
 }
+
+// Active session tracking
+let activeWsConnections = 0;
 
 // Health check endpoint
 app.get('/api/health', (_req, res) => {
@@ -174,8 +224,9 @@ app.get('/api/health', (_req, res) => {
     voice: 'Kore (Female, Warm Customer Service)',
     primaryChatModel: 'gemini-flash-latest',
     fallbackChatModel: 'gemini-3.1-flash-lite',
+    ttsModel: 'gemini-3.8-flash-tts',
     liveModel: 'gemini-3.8-live',
-    ttsModel: 'gemini-3.8-flash-lite-tts',
+    activeSessions: activeWsConnections,
   });
 });
 
@@ -215,7 +266,7 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-// High-Fidelity Text-to-Speech endpoint using gemini-3.8-flash-lite-tts with female voice 'Kore'
+// High-Fidelity Text-to-Speech endpoint
 app.post('/api/tts', async (req, res) => {
   try {
     const { text, voiceName = 'Kore' } = req.body;
@@ -231,7 +282,7 @@ app.post('/api/tts', async (req, res) => {
     }
 
     const base64Audio = await synthesizeSpeech(text, voiceName);
-    res.json({ audioBase64: base64Audio, mimeType: 'audio/wav' });
+    res.json({ audioBase64: base64Audio, mimeType: base64Audio ? 'audio/wav' : null });
   } catch (err: unknown) {
     console.error('TTS API Error:', err);
     const message = err instanceof Error ? err.message : 'Speech synthesis failed';
@@ -239,10 +290,10 @@ app.post('/api/tts', async (req, res) => {
   }
 });
 
-// Full Voice Turn endpoint (Processes conversational turn and synthesizes speech in 1 fast roundtrip)
+// Full Voice Turn endpoint (Supports direct recorded userAudio OR userText with seamless fallback)
 app.post('/api/voice-turn', async (req, res) => {
   try {
-    const { messages, userText, languagePreference, voiceName = 'Kore' } = req.body;
+    const { messages, userText, userAudio, audioMimeType = 'audio/wav', languagePreference, voiceName = 'Kore' } = req.body;
 
     if (!apiKey) {
       res.status(503).json({ error: 'Gemini API key missing' });
@@ -253,36 +304,95 @@ app.post('/api/voice-turn', async (req, res) => {
     if (Array.isArray(messages)) {
       history = [...messages];
     }
-    if (userText && typeof userText === 'string') {
-      history.push({ role: 'user', content: userText.trim() });
-    }
 
-    if (history.length === 0) {
-      res.status(400).json({ error: 'No user input or message history provided' });
-      return;
-    }
+    let userTranscript = userText ? userText.trim() : '';
+    let reply = '';
 
     let langInstruction = '';
     if (languagePreference && languagePreference !== 'auto') {
-      langInstruction = ` Preferred language requested: ${languagePreference}. Please speak in ${languagePreference}.`;
+      langInstruction = ` Preferred language: ${languagePreference}.`;
     }
 
-    const sanitizedContents = formatAndSanitizeContents(history);
-    const reply = await generateReceptionistReply(
-      sanitizedContents,
-      RECEPTIONIST_SYSTEM_INSTRUCTION + langInstruction
-    );
+    // Case 1: Caller provided audio data directly
+    if (userAudio && typeof userAudio === 'string' && userAudio.length > 50) {
+      try {
+        const sanitizedHistory = formatAndSanitizeContents(history);
+        const turnPrompt = `You are the polite, helpful AI receptionist for Ali AI Solutions.
+Listen carefully to the caller's spoken audio.
+First, transcribe what the caller said.
+Then, give your concise, professional receptionist response (1 to 2 spoken sentences).${langInstruction}
+Respond strictly in this format:
+TRANSCRIPT: <caller speech transcription>
+REPLY: <your receptionist spoken response>`;
 
-    // Synthesize audio
+        const response = await ai.models.generateContent({
+          model: 'gemini-flash-latest',
+          contents: [
+            ...sanitizedHistory,
+            {
+              role: 'user',
+              parts: [
+                {
+                  inlineData: {
+                    mimeType: audioMimeType || 'audio/wav',
+                    data: userAudio,
+                  },
+                },
+                { text: turnPrompt },
+              ],
+            },
+          ],
+          config: {
+            temperature: 0.7,
+          },
+        });
+
+        const rawResult = response.text?.trim() || '';
+        const transcriptMatch = rawResult.match(/TRANSCRIPT:\s*(.+?)(?=\nREPLY:|$)/is);
+        const replyMatch = rawResult.match(/REPLY:\s*(.+)$/is);
+
+        if (replyMatch && replyMatch[1]) {
+          reply = replyMatch[1].trim();
+          userTranscript = transcriptMatch && transcriptMatch[1] ? transcriptMatch[1].trim() : 'Spoken inquiry';
+        } else if (rawResult) {
+          reply = rawResult.replace(/^TRANSCRIPT:.+?\n/i, '').replace(/^REPLY:/i, '').trim();
+          userTranscript = transcriptMatch && transcriptMatch[1] ? transcriptMatch[1].trim() : 'Spoken inquiry';
+        }
+      } catch (audioTurnErr) {
+        console.warn('[Voice Turn] Direct audio understanding notice, falling back to text generation:', audioTurnErr);
+      }
+    }
+
+    // Case 2: If reply not set yet (or userText was supplied)
+    if (!reply) {
+      if (userText && typeof userText === 'string') {
+        history.push({ role: 'user', content: userText.trim() });
+      } else if (!userAudio) {
+        res.status(400).json({ error: 'No user speech audio or text provided' });
+        return;
+      }
+
+      const sanitizedContents = formatAndSanitizeContents(history);
+      reply = await generateReceptionistReply(
+        sanitizedContents,
+        RECEPTIONIST_SYSTEM_INSTRUCTION + langInstruction
+      );
+      if (!userTranscript) {
+        userTranscript = userText || 'Spoken inquiry';
+      }
+    }
+
+    // Synthesize audio with gemini-3.8-flash-tts
     let audioBase64: string | null = null;
     try {
       audioBase64 = await synthesizeSpeech(reply, voiceName);
     } catch (ttsErr) {
-      console.warn('Voice turn TTS synthesis error:', ttsErr);
+      console.warn('Voice turn TTS synthesis notice:', ttsErr);
     }
 
     res.json({
       reply,
+      userTranscript,
       audioBase64,
       mimeType: audioBase64 ? 'audio/wav' : null,
     });
@@ -349,7 +459,8 @@ ${transcript}`,
 const wss = new WebSocketServer({ server, path: '/api/live-voice' });
 
 wss.on('connection', async (clientWs: WebSocket) => {
-  console.log('[WebSocket] Client connected to Live Voice stream');
+  activeWsConnections++;
+  console.log(`[WebSocket] Client connected (Active sessions: ${activeWsConnections})`);
 
   if (!apiKey) {
     clientWs.send(
@@ -365,7 +476,7 @@ wss.on('connection', async (clientWs: WebSocket) => {
   let session: any = null;
   let isSessionActive = false;
 
-  // Session duration timeout (5 minutes max per session to protect free tier quota)
+  // Session duration timeout (5 minutes max per session to protect quota)
   const sessionTimeout = setTimeout(() => {
     if (clientWs.readyState === WebSocket.OPEN) {
       clientWs.send(
@@ -379,7 +490,6 @@ wss.on('connection', async (clientWs: WebSocket) => {
   }, 5 * 60 * 1000);
 
   try {
-    // Attempt Live API connection using gemini-3.8-live and female voice 'Kore'
     clientWs.send(JSON.stringify({ type: 'status', status: 'connecting' }));
 
     session = await ai.live.connect({
@@ -391,15 +501,29 @@ wss.on('connection', async (clientWs: WebSocket) => {
             prebuiltVoiceConfig: { voiceName: 'Kore' },
           },
         },
+        inputAudioTranscription: {},
+        outputAudioTranscription: {},
         systemInstruction: RECEPTIONIST_SYSTEM_INSTRUCTION,
       },
       callbacks: {
         onmessage: (message: any) => {
           if (clientWs.readyState !== WebSocket.OPEN) return;
 
-          // Check for audio output chunk
           const audioChunk = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
-          const textChunk = message.serverContent?.modelTurn?.parts?.[0]?.text;
+          const textChunk =
+            message.serverContent?.outputTranscription?.text ||
+            message.serverContent?.modelTurn?.parts?.[0]?.text;
+
+          // If Gemini recognized user spoken audio
+          const inputTranscript = message.serverContent?.inputAudioTranscription?.text;
+          if (inputTranscript) {
+            clientWs.send(
+              JSON.stringify({
+                type: 'userSpeechTranscript',
+                text: inputTranscript,
+              })
+            );
+          }
 
           if (audioChunk) {
             clientWs.send(
@@ -418,12 +542,10 @@ wss.on('connection', async (clientWs: WebSocket) => {
             );
           }
 
-          // Interruption event from model
           if (message.serverContent?.interrupted) {
             clientWs.send(JSON.stringify({ type: 'interrupted' }));
           }
 
-          // Turn complete
           if (message.serverContent?.turnComplete) {
             clientWs.send(JSON.stringify({ type: 'turnComplete' }));
           }
@@ -436,7 +558,7 @@ wss.on('connection', async (clientWs: WebSocket) => {
           isSessionActive = false;
         },
         onerror: (err: any) => {
-          console.error('[Live API] Error:', err);
+          console.warn('[Live API] Error notice:', err?.message || err);
           if (clientWs.readyState === WebSocket.OPEN) {
             clientWs.send(
               JSON.stringify({
@@ -453,9 +575,7 @@ wss.on('connection', async (clientWs: WebSocket) => {
     isSessionActive = true;
     clientWs.send(JSON.stringify({ type: 'status', status: 'connected', mode: 'live_stream' }));
   } catch (err: unknown) {
-    console.warn('[Live API] Direct Live connection fallback:', err);
-    // If Live API is encountering quota or network restriction,
-    // notify client to use the turn-by-turn conversational audio fallback
+    console.warn('[Live API] Live connection fallback to conversational turns:', err);
     clientWs.send(
       JSON.stringify({
         type: 'status',
@@ -466,7 +586,7 @@ wss.on('connection', async (clientWs: WebSocket) => {
     );
   }
 
-  // Handle incoming audio and text messages from browser
+  // Handle incoming messages from browser
   clientWs.on('message', async (data: any) => {
     try {
       const msg = JSON.parse(data.toString());
@@ -478,6 +598,25 @@ wss.on('connection', async (clientWs: WebSocket) => {
               data: msg.audio,
               mimeType: 'audio/pcm;rate=16000',
             },
+          });
+        }
+      } else if (msg.type === 'activityEnd') {
+        if (session && isSessionActive) {
+          session.sendRealtimeInput({
+            activityEnd: {},
+          });
+        }
+      } else if (msg.type === 'speechTurn' && msg.text) {
+        // Direct spoken utterance streamed to Live session for sub-second responses
+        if (session && isSessionActive) {
+          session.sendClientContent({
+            turns: [
+              {
+                role: 'user',
+                parts: [{ text: msg.text }],
+              },
+            ],
+            turnComplete: true,
           });
         }
       } else if (msg.type === 'text' && msg.text) {
@@ -492,13 +631,13 @@ wss.on('connection', async (clientWs: WebSocket) => {
             turnComplete: true,
           });
         }
+      } else if (msg.type === 'interrupted') {
+        // Caller barged in - stop any generation if needed
       } else if (msg.type === 'end') {
         if (session) {
           try {
             session.close();
-          } catch {
-            // ignore
-          }
+          } catch {}
         }
         clientWs.close();
       }
@@ -508,15 +647,14 @@ wss.on('connection', async (clientWs: WebSocket) => {
   });
 
   clientWs.on('close', () => {
+    activeWsConnections = Math.max(0, activeWsConnections - 1);
     clearTimeout(sessionTimeout);
     if (session) {
       try {
         session.close();
-      } catch {
-        // ignore
-      }
+      } catch {}
     }
-    console.log('[WebSocket] Client disconnected');
+    console.log(`[WebSocket] Client disconnected (Remaining: ${activeWsConnections})`);
   });
 });
 
