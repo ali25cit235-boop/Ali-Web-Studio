@@ -1,263 +1,191 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, ArrowDown, ShieldCheck, Sparkles, Volume2, Bot, User, CheckCircle2 } from 'lucide-react';
-import { siteConfig } from '../data/siteConfig';
+import { useState } from 'react';
+import { ArrowDown, MessageCircle, Copy, Check, Terminal, Sparkles, MapPin } from 'lucide-react';
+import { portfolioConfig } from '../data/portfolioData';
 
-export default function Hero() {
-  const [activeDialogIndex, setActiveDialogIndex] = useState(0);
+interface HeroProps {
+  onExploreClick: () => void;
+  onConnectClick: () => void;
+}
 
-  const dialogSequence = [
-    {
-      caller: "Hi! Do you have any openings for dental cleaning this Thursday?",
-      agent: "Yes, we have 2:30 PM & 4:15 PM open with Dr. Harris. Which works best?",
-      industry: "Dental Clinic",
-    },
-    {
-      caller: "Can I get an estimate for full car detailing this weekend?",
-      agent: "Certainly! Our ceramic package starts at $180. What vehicle model is it?",
-      industry: "Auto Detailing",
-    },
-    {
-      caller: "Our office air conditioning stopped working, is someone on call?",
-      agent: "Yes! Our emergency team is on dispatch. Can I grab your property address?",
-      industry: "HVAC & Repairs",
-    },
-    {
-      caller: "Do you have haircut appointments available tomorrow at 5 PM?",
-      agent: "Tomorrow at 5:15 PM is open with Sarah. Shall I hold that for you?",
-      industry: "Salon & Grooming",
-    },
-  ];
+export default function Hero({ onExploreClick, onConnectClick }: HeroProps) {
+  const [activeSnippetIndex, setActiveSnippetIndex] = useState(0);
+  const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveDialogIndex((prev) => (prev + 1) % dialogSequence.length);
-    }, 4500);
-    return () => clearInterval(timer);
-  }, [dialogSequence.length]);
+  const activeSnippet = portfolioConfig.terminalSnippets[activeSnippetIndex];
 
-  const scrollTo = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      const navOffset = 80;
-      const elementPosition = el.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - navOffset;
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth',
-      });
-    }
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(activeSnippet.code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  const currentDialog = dialogSequence[activeDialogIndex];
-
   return (
-    <section id="hero" className="relative min-h-[92vh] flex items-center justify-center pt-28 pb-16 overflow-hidden bg-[#080B14]">
-      {/* Dynamic ambient background motion lighting */}
-      <motion.div
-        animate={{
-          scale: [1, 1.15, 1],
-          opacity: [0.12, 0.22, 0.12],
-        }}
-        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[750px] h-[750px] bg-[#4F8CFF]/15 rounded-full blur-[170px] pointer-events-none -z-10"
-      />
-      <motion.div
-        animate={{
-          scale: [1.1, 1, 1.1],
-          opacity: [0.10, 0.18, 0.10],
-        }}
-        transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute top-1/3 right-10 w-[550px] h-[550px] bg-[#8B5CF6]/15 rounded-full blur-[150px] pointer-events-none -z-10"
-      />
-      <div className="absolute bottom-10 left-10 w-[400px] h-[400px] bg-[#06B6D4]/08 rounded-full blur-[140px] pointer-events-none -z-10" />
+    <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden">
+      {/* Background ambient lighting */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-gradient-to-tr from-blue-600/15 via-indigo-600/10 to-violet-600/15 blur-[120px] pointer-events-none -z-10" />
+      <div className="absolute top-1/3 right-10 w-[300px] h-[300px] bg-cyan-500/10 blur-[100px] pointer-events-none -z-10" />
 
-      {/* Subtle tech grid background */}
-      <div className="absolute inset-0 bg-grid-tech pointer-events-none -z-10 opacity-60" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Top Split Container */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-          
-          {/* Left Column: Core Value Proposition with stagger animations */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            className="lg:col-span-7 space-y-6 text-left"
-          >
-            {/* Kicker label */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/[0.04] border border-white/10 text-xs font-mono text-slate-300 backdrop-blur-sm shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-[#4F8CFF] animate-pulse" />
-              <span className="text-[#4F8CFF] font-semibold">AI VOICE AGENTS</span>
-              <span className="text-slate-600" aria-hidden="true">&bull;</span>
-              <span>BUSINESS AUTOMATION</span>
+          {/* Left Column: Typographic & Brand Hierarchy */}
+          <div className="lg:col-span-6 space-y-6">
+            {/* Status & Intro Label */}
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-xs font-mono font-medium tracking-wider uppercase text-blue-400">
+                HELLO, I'M ALI ABBAS
+              </span>
+              <span className="text-slate-600 text-xs" aria-hidden="true">·</span>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-950/40 border border-blue-800/40 text-[11px] font-medium text-blue-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                <span>{portfolioConfig.statusBadge}</span>
+              </div>
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-[3.65rem] font-bold tracking-tight text-white font-display leading-[1.1] text-balance">
-              Meet Your Business's <span className="text-gradient-electric">AI Voice Assistant</span>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white font-outfit leading-[1.1] text-balance">
+              Learning.{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-300 to-cyan-300">
+                Building.
+              </span>{' '}
+              Exploring.
             </h1>
 
             {/* Supporting Copy */}
-            <p className="text-base sm:text-lg text-slate-300 leading-relaxed max-w-2xl">
-              Answer customer enquiries, capture leads, and help your business stay responsive with a custom AI Voice Agent designed around your services and workflow.
+            <p className="text-base sm:text-lg text-slate-300 leading-relaxed max-w-xl">
+              {portfolioConfig.heroDescription}
             </p>
 
-            {/* Primary & Secondary Action Buttons */}
-            <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-              <motion.a
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                href={siteConfig.contact.whatsappDemoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-7 py-3.5 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-[#4F8CFF] to-[#8B5CF6] hover:from-[#3B7CFF] hover:to-[#7C3AED] shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all cursor-pointer flex items-center justify-center gap-2.5"
+            {/* Location & Timezone marker */}
+            <div className="flex items-center gap-2 text-xs text-slate-400">
+              <MapPin className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+              <span>Based in Pakistan</span>
+              <span aria-hidden="true">·</span>
+              <span>CIT Student (Computer Information Technology)</span>
+            </div>
+
+            {/* Two Primary CTAs */}
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              <button
+                onClick={onExploreClick}
+                className="inline-flex items-center gap-2 px-6 py-3.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 active:bg-blue-700 rounded-xl shadow-lg shadow-blue-600/25 transition-all cursor-pointer whitespace-nowrap group"
               >
-                <MessageSquare className="w-4 h-4" />
-                <span>Get Your FREE Demo</span>
-              </motion.a>
+                <span>Explore My Journey</span>
+                <ArrowDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
+              </button>
 
               <button
-                type="button"
-                onClick={() => scrollTo('how-it-works')}
-                className="px-6 py-3.5 rounded-xl font-semibold text-sm text-slate-200 bg-white/[0.05] hover:bg-white/[0.09] border border-white/10 hover:border-blue-400/30 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95"
+                onClick={onConnectClick}
+                className="inline-flex items-center gap-2 px-6 py-3.5 text-sm font-semibold text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition-all cursor-pointer whitespace-nowrap"
               >
-                <span>How It Works</span>
-                <ArrowDown className="w-4 h-4 text-slate-400" />
+                <MessageCircle className="w-4 h-4 text-emerald-400" />
+                <span>Connect With Me</span>
               </button>
             </div>
+          </div>
 
-            {/* Trust badge note */}
-            <div className="pt-2 flex items-center gap-2 text-xs font-mono text-slate-400">
-              <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>Personalized private demo prepared for your business &bull; Tested separately</span>
-            </div>
-          </motion.div>
-
-          {/* Right Column: Advanced Illustrative Motion Graphics (Orb + Concentric Waves + Rotating Radar Ring) */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="lg:col-span-5 flex justify-center lg:justify-end"
-          >
-            <div className="relative w-full max-w-md aspect-square rounded-3xl bg-gradient-to-b from-[#111827] via-[#0E1526] to-[#080B14] border border-white/[0.09] p-7 sm:p-8 flex flex-col items-center justify-between overflow-hidden shadow-2xl shadow-black/90">
-              
-              {/* Animated corner glow beam */}
-              <div className="absolute top-0 right-0 w-44 h-44 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-44 h-44 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
-
-              {/* Central Motion Graphic Stage */}
-              <div className="relative w-44 h-44 sm:w-52 sm:h-52 flex items-center justify-center my-auto">
-                {/* Outermost pulsing radar ring */}
-                <motion.div
-                  animate={{
-                    scale: [1, 1.45, 1],
-                    opacity: [0.25, 0.05, 0.25],
-                  }}
-                  transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
-                  className="absolute -inset-6 rounded-full border border-sky-400/25 pointer-events-none"
-                />
-
-                {/* Secondary expanding wave ring */}
-                <motion.div
-                  animate={{
-                    scale: [1, 1.3, 1],
-                    opacity: [0.35, 0.1, 0.35],
-                  }}
-                  transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
-                  className="absolute -inset-2 rounded-full border border-purple-400/35 pointer-events-none"
-                />
-
-                {/* Rotating orbital particle ring */}
-                <div className="absolute -inset-4 rounded-full border border-dashed border-blue-400/20 animate-radar-spin pointer-events-none" />
-
-                {/* Main Glowing Core Orb with dynamic breathing motion */}
-                <div className="w-36 h-36 sm:w-40 sm:h-40 rounded-full bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 p-[3px] shadow-2xl shadow-blue-500/50 animate-orb-glow relative flex items-center justify-center">
-                  <div className="w-full h-full rounded-full bg-[#090D18] flex flex-col items-center justify-center relative overflow-hidden">
-                    <div className="absolute inset-0 bg-radial from-blue-500/25 via-purple-500/15 to-transparent pointer-events-none" />
-                    
-                    {/* Dynamic Equalizer Waveform Bars with individual wave offsets */}
-                    <div className="flex items-center gap-1.5 h-11 z-10 px-2">
-                      {[30, 65, 90, 45, 100, 75, 95, 50, 85, 40].map((h, i) => (
-                        <motion.span
-                          key={i}
-                          animate={{
-                            height: [`${h * 0.3}%`, `${h}%`, `${h * 0.4}%`],
-                            opacity: [0.75, 1, 0.8],
-                          }}
-                          transition={{
-                            duration: 0.9 + (i % 4) * 0.2,
-                            repeat: Infinity,
-                            ease: 'easeInOut',
-                          }}
-                          className="w-1.5 rounded-full bg-gradient-to-t from-blue-400 via-indigo-400 to-purple-300 shadow-sm shadow-blue-400/40"
-                        />
-                      ))}
-                    </div>
-
-                    <div className="flex items-center gap-1.5 mt-2 z-10">
-                      <Volume2 className="w-3 h-3 text-[#4F8CFF] animate-pulse" />
-                      <span className="text-[10px] font-mono text-blue-200 font-semibold tracking-wider uppercase">
-                        AI Audio Stream
-                      </span>
-                    </div>
+          {/* Right Column: Hero Visual & Interactive Code Terminal */}
+          <div className="lg:col-span-6 space-y-4">
+            {/* Interactive Terminal Window */}
+            <div className="rounded-2xl border border-slate-800 bg-[#0A0D18]/90 backdrop-blur-md shadow-2xl overflow-hidden">
+              {/* Window Header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800/80 bg-slate-950/60">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-full bg-red-500/80 inline-block" />
+                    <span className="w-3 h-3 rounded-full bg-yellow-500/80 inline-block" />
+                    <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block" />
+                  </div>
+                  <span className="text-slate-600 text-xs ml-1" aria-hidden="true">|</span>
+                  <div className="flex items-center gap-1 text-xs font-mono text-slate-400">
+                    <Terminal className="w-3.5 h-3.5 text-blue-400" />
+                    <span>{activeSnippet.filename}</span>
                   </div>
                 </div>
+
+                {/* Copy Button */}
+                <button
+                  onClick={handleCopyCode}
+                  className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800/50 hover:bg-slate-800 border border-slate-700/60 transition-colors cursor-pointer"
+                  title="Copy snippet"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-3 h-3 text-emerald-400" />
+                      <span className="text-emerald-400">Copied</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3 h-3" />
+                      <span>Copy</span>
+                    </>
+                  )}
+                </button>
               </div>
 
-              {/* Dynamic Animated Conversation Turns with smooth AnimatePresence transition */}
-              <div className="w-full relative min-h-[105px] mt-4 z-10">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeDialogIndex}
-                    initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
-                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                    exit={{ opacity: 0, y: -12, filter: 'blur(4px)' }}
-                    transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                    className="space-y-2 text-left"
-                  >
-                    {/* Industry indicator label */}
-                    <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 px-1">
-                      <span className="text-purple-400 font-semibold">Workflow: {currentDialog.industry}</span>
-                      <span className="text-slate-500">Live Call Preview</span>
-                    </div>
-
-                    {/* Caller inquiry card */}
-                    <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-xs text-slate-200 flex items-start gap-2 shadow-sm">
-                      <User className="w-3.5 h-3.5 text-slate-400 mt-0.5 shrink-0" />
-                      <span className="leading-snug">&ldquo;{currentDialog.caller}&rdquo;</span>
-                    </div>
-
-                    {/* AI Agent instant response card */}
-                    <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/25 text-xs text-blue-100 flex items-start gap-2 shadow-sm">
-                      <Bot className="w-3.5 h-3.5 text-[#4F8CFF] mt-0.5 shrink-0 animate-pulse" />
-                      <span className="leading-snug">&ldquo;{currentDialog.agent}&rdquo;</span>
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-
-              {/* Step indicator dots */}
-              <div className="flex items-center justify-center gap-1.5 mt-3 z-10">
-                {dialogSequence.map((_, i) => (
+              {/* Terminal Tabs */}
+              <div className="flex items-center gap-1 px-3 py-2 bg-slate-900/40 border-b border-slate-800/60 overflow-x-auto text-xs font-mono">
+                {portfolioConfig.terminalSnippets.map((snippet, idx) => (
                   <button
-                    key={i}
-                    onClick={() => setActiveDialogIndex(i)}
-                    className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                      i === activeDialogIndex ? 'w-6 bg-[#4F8CFF]' : 'w-1.5 bg-white/20 hover:bg-white/40'
+                    key={snippet.id}
+                    onClick={() => setActiveSnippetIndex(idx)}
+                    className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer whitespace-nowrap ${
+                      activeSnippetIndex === idx
+                        ? 'bg-blue-600/20 text-blue-300 border border-blue-500/30 font-medium'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
                     }`}
-                    aria-label={`Show dialog sample ${i + 1}`}
-                  />
+                  >
+                    {snippet.label}
+                  </button>
                 ))}
               </div>
 
-            </div>
-          </motion.div>
+              {/* Code Editor Body */}
+              <div className="p-4 overflow-x-auto max-h-[300px] text-xs font-mono leading-relaxed bg-[#070912]">
+                <pre className="text-slate-300">
+                  <code>{activeSnippet.code}</code>
+                </pre>
+              </div>
 
+              {/* Terminal Footer info */}
+              <div className="px-4 py-2 bg-slate-950/70 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500 font-mono">
+                <span>Ali Abbas · CIT Builder Environment</span>
+                <span className="text-blue-400 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3" />
+                  Hands-on learning
+                </span>
+              </div>
+            </div>
+
+            {/* Small Workstation Photo Pill */}
+            <div className="flex items-center gap-3 p-3 rounded-xl border border-slate-800/70 bg-slate-900/40 backdrop-blur-sm">
+              <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-slate-700/60">
+                <img
+                  src="/src/assets/images/ali_hero_workspace_1792478730711.jpg"
+                  alt="Ali Abbas developer workspace"
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <div className="text-xs">
+                <p className="font-medium text-slate-200">Where the building happens</p>
+                <p className="text-slate-400 text-[11px]">Dual-monitor setup · Android Studio · VS Code · Hardware bench</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 4-Item Milestone Strip Below Hero Split */}
+        <div className="mt-16 pt-8 border-t border-slate-800/80 grid grid-cols-2 md:grid-cols-4 gap-6">
+          {portfolioConfig.stats.map((stat, i) => (
+            <div key={i} className="space-y-1">
+              <p className="text-xs font-mono text-slate-400 uppercase tracking-wider">{stat.label}</p>
+              <p className="text-xl sm:text-2xl font-bold font-outfit text-white tabular-nums">{stat.value}</p>
+              <p className="text-xs text-slate-500">{stat.note}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
   );
 }
-

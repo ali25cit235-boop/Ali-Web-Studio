@@ -1,32 +1,38 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, ArrowUpRight, PhoneCall } from 'lucide-react';
-import BrandLogo from './BrandLogo';
-import { siteConfig } from '../data/siteConfig';
+import { ArrowUpRight, Menu, X } from 'lucide-react';
+import { portfolioConfig } from '../data/portfolioData';
 
 interface NavbarProps {
-  onOpenWhatsApp: () => void;
-  onContactClick: (servicePreselect?: string) => void;
+  onConnectClick: () => void;
 }
 
-export default function Navbar({ onOpenWhatsApp, onContactClick }: NavbarProps) {
+export default function Navbar({ onConnectClick }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 24);
+      setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const scrollTo = (id: string) => {
+  const navLinks = [
+    { label: 'About', href: '#about' },
+    { label: 'Focus Areas', href: '#focus-areas' },
+    { label: 'Projects', href: '#projects' },
+    { label: 'Journey', href: '#journey' },
+    { label: 'Tech Setup', href: '#tech-setup' },
+  ];
+
+  const handleLinkClick = (href: string) => {
     setMobileMenuOpen(false);
-    const element = document.getElementById(id);
-    if (element) {
-      const navOffset = 80;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+    const target = document.querySelector(href);
+    if (target) {
+      const topOffset = 80;
+      const elementPosition = target.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - topOffset;
       window.scrollTo({
         top: offsetPosition,
         behavior: 'smooth',
@@ -34,128 +40,90 @@ export default function Navbar({ onOpenWhatsApp, onContactClick }: NavbarProps) 
     }
   };
 
-  const navLinks = [
-    { label: "Home", id: "hero" },
-    { label: "Capabilities", id: "capabilities" },
-    { label: "How It Works", id: "how-it-works" },
-    { label: "Use Cases", id: "use-cases" },
-    { label: "Websites", id: "websites" },
-    { label: "Free Demo", id: "demo-request" },
-  ];
-
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
         isScrolled
-          ? 'bg-[#080B14]/90 backdrop-blur-md border-b border-white/[0.08] py-3.5 shadow-lg shadow-black/40'
-          : 'bg-transparent py-5 border-b border-transparent'
+          ? 'bg-[#06080F]/85 backdrop-blur-md border-b border-slate-800/80 shadow-lg shadow-black/30'
+          : 'bg-transparent border-b border-transparent'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-8">
-          {/* Zone 1: Brand Wordmark */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Strict Top Bar Contract: 3 Zones separated by gap-8 */}
+        <div className="flex items-center justify-between gap-8 h-20">
+          {/* Zone 1: Single text element wordmark */}
           <a
-            href="#hero"
-            onClick={(e) => {
-              e.preventDefault();
-              scrollTo('hero');
-            }}
-            className="group focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg shrink-0"
-            aria-label="Ali AI Solutions — Home"
+            href="#"
+            className="flex items-center gap-2.5 text-lg font-semibold tracking-tight text-white whitespace-nowrap shrink-0 group"
           >
-            <BrandLogo size="md" />
+            <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-mono font-bold shadow-sm shadow-blue-500/20 group-hover:scale-105 transition-transform">
+              AA
+            </span>
+            <span className="font-outfit text-white group-hover:text-blue-400 transition-colors">
+              {portfolioConfig.name}
+            </span>
           </a>
 
-          {/* Zone 2: Desktop Navigation Links (Clean single-line typography) */}
-          <nav className="hidden lg:flex items-center gap-7 text-sm font-medium text-slate-300" aria-label="Main Navigation">
+          {/* Zone 2: 4-5 concise single-line text navigation links */}
+          <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-300">
             {navLinks.map((link) => (
               <button
-                key={link.id}
-                onClick={() => scrollTo(link.id)}
-                className="hover:text-white transition-colors cursor-pointer whitespace-nowrap shrink-0 relative py-1 focus:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 rounded"
+                key={link.label}
+                onClick={() => handleLinkClick(link.href)}
+                className="hover:text-white transition-colors cursor-pointer whitespace-nowrap shrink-0 py-1"
               >
                 {link.label}
               </button>
             ))}
           </nav>
 
-          {/* Zone 3: Primary Action & Quick WhatsApp Trigger */}
-          <div className="hidden sm:flex items-center gap-3 shrink-0">
+          {/* Zone 3: 1 primary action */}
+          <div className="hidden md:flex items-center gap-3 shrink-0">
             <button
-              type="button"
-              onClick={onOpenWhatsApp}
-              className="p-2.5 rounded-xl text-slate-300 hover:text-emerald-400 hover:bg-emerald-500/10 border border-white/5 hover:border-emerald-500/30 transition-all cursor-pointer"
-              title="Quick WhatsApp Inquiry"
-              aria-label="Open WhatsApp conversation"
+              onClick={onConnectClick}
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 active:bg-blue-700 rounded-lg shadow-sm shadow-blue-500/20 hover:shadow-blue-500/40 transition-all whitespace-nowrap shrink-0 cursor-pointer"
             >
-              <PhoneCall className="w-4 h-4" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onContactClick()}
-              className="px-5 py-2.5 text-xs font-semibold text-white bg-gradient-to-r from-[#4F8CFF] to-[#8B5CF6] hover:from-[#3B7CFF] hover:to-[#7C3AED] rounded-xl shadow-md shadow-blue-500/20 hover:shadow-blue-500/30 transition-all cursor-pointer whitespace-nowrap active:scale-95 flex items-center gap-1.5"
-            >
-              <span>Discuss Your Project</span>
+              <span>Connect With Me</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          {/* Mobile Menu Toggle Button */}
-          <div className="flex items-center gap-2 lg:hidden">
+          {/* Mobile hamburger toggle */}
+          <div className="flex md:hidden items-center">
             <button
-              type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2.5 rounded-xl text-slate-300 hover:text-white bg-white/5 border border-white/10 transition-colors cursor-pointer"
-              aria-expanded={mobileMenuOpen}
-              aria-label="Toggle navigation menu"
+              className="p-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer"
+              aria-label="Toggle Navigation Menu"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-[#0A0E1A] border-b border-white/10 px-6 py-6 space-y-4 animate-in slide-in-from-top-4 duration-200">
-          <nav className="flex flex-col space-y-3" aria-label="Mobile Navigation">
+        <div className="md:hidden bg-[#070A12] border-b border-slate-800 px-6 py-6 shadow-2xl animate-in slide-in-from-top-2 duration-200">
+          <nav className="flex flex-col space-y-3">
             {navLinks.map((link) => (
               <button
-                key={link.id}
-                onClick={() => scrollTo(link.id)}
-                className="text-left text-base font-medium text-slate-200 hover:text-blue-400 py-2 border-b border-white/5 transition-colors cursor-pointer"
+                key={link.label}
+                onClick={() => handleLinkClick(link.href)}
+                className="text-left text-base font-medium text-slate-200 hover:text-blue-400 py-2.5 transition-colors border-b border-slate-800/60"
               >
                 {link.label}
               </button>
             ))}
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onConnectClick();
+              }}
+              className="w-full mt-3 py-3 px-4 text-center text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg shadow-md transition-colors"
+            >
+              Connect With Me
+            </button>
           </nav>
-
-          <div className="pt-2 flex flex-col gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onContactClick();
-              }}
-              className="w-full py-3 rounded-xl text-center text-sm font-semibold text-white bg-gradient-to-r from-[#4F8CFF] to-[#8B5CF6] shadow-md shadow-blue-500/25 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>Discuss Your Project</span>
-              <ArrowUpRight className="w-4 h-4" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenWhatsApp();
-              }}
-              className="w-full py-2.5 rounded-xl text-center text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <PhoneCall className="w-3.5 h-3.5" />
-              <span>WhatsApp Direct Chat</span>
-            </button>
-          </div>
         </div>
       )}
     </header>

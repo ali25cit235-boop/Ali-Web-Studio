@@ -1,143 +1,168 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, ExternalLink, Check, ArrowUpRight } from 'lucide-react';
-import { WebsiteDemoItem } from '../data/siteConfig';
+import { useEffect } from 'react';
+import { X, ExternalLink, Code2, CheckCircle2, ArrowRight, Layers } from 'lucide-react';
+import { ProjectItem } from '../data/portfolioData';
 
 interface ProjectModalProps {
-  demo: WebsiteDemoItem | null;
+  project: ProjectItem | null;
   onClose: () => void;
-  onContactClick: (demoTitle?: string) => void;
 }
 
-export default function ProjectModal({ demo, onClose, onContactClick }: ProjectModalProps) {
-  if (!demo) return null;
+export default function ProjectModal({ project, onClose }: ProjectModalProps) {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    if (project) {
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [project, onClose]);
+
+  if (!project) return null;
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-        {/* Backdrop */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          className="fixed inset-0 bg-black/85 backdrop-blur-md"
-        />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+      {/* Backdrop click listener */}
+      <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
 
-        {/* Modal Container */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.96, y: 20 }}
-          transition={{ type: 'spring', damping: 26, stiffness: 320 }}
-          className="relative w-full max-w-3xl bg-[#0D1220] border border-white/10 rounded-2xl shadow-2xl shadow-black/80 overflow-hidden text-left z-10 my-8"
-        >
-          {/* Top Bar with mock browser controls and close */}
-          <div className="flex items-center justify-between px-5 py-3.5 bg-[#090C16] border-b border-white/10">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
-              <span className="ml-2 text-xs font-mono text-slate-400">
-                {demo.category} &bull; {demo.hasLiveDemo ? 'Live Layout' : 'Concept Preview'}
-              </span>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-              aria-label="Close demo modal"
-            >
-              <X className="w-5 h-5" />
-            </button>
+      {/* Modal Card */}
+      <div className="relative w-full max-w-3xl bg-[#090D18] border border-slate-800 rounded-2xl shadow-2xl overflow-hidden z-10 max-h-[90vh] flex flex-col my-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800/80 bg-slate-950/70 shrink-0">
+          <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
+            <span>{project.categoryLabel}</span>
+            <span aria-hidden="true">·</span>
+            <span>{project.year}</span>
+            <span aria-hidden="true">·</span>
+            <span className="text-blue-400">{project.status}</span>
           </div>
 
-          {/* Demo Image Banner */}
-          <div className="relative aspect-[16/9] w-full bg-slate-900 overflow-hidden">
-            <img
-              src={demo.image}
-              alt={demo.title}
-              onError={(e) => {
-                e.currentTarget.src = `/images/${demo.id}.jpg`;
-              }}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0D1220] via-transparent to-transparent opacity-85" />
-          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+            aria-label="Close modal (Esc)"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-          {/* Modal Content */}
-          <div className="p-6 sm:p-8 space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <span className="text-xs font-mono text-[#4F8CFF] tracking-wide uppercase">
-                  {demo.category}
-                </span>
-                <h3 className="text-2xl sm:text-3xl font-bold text-white font-display mt-1">
-                  {demo.title}
-                </h3>
-                <p className="text-sm text-slate-400 mt-0.5">{demo.tagline}</p>
-              </div>
-
-              {/* Action buttons */}
-              <div className="flex items-center gap-3">
-                {demo.hasLiveDemo && demo.url ? (
-                  <a
-                    href={demo.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-white bg-[#4F8CFF] hover:bg-[#3B7CFF] rounded-xl transition-all shadow-md shadow-blue-500/25 cursor-pointer active:scale-95"
-                  >
-                    <span>Open Live Demo</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                ) : (
-                  <div className="px-3.5 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-mono">
-                    Concept Preview Ready
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <p className="text-sm text-slate-300 leading-relaxed">
-              {demo.description}
+        {/* Modal Scrollable Body */}
+        <div className="p-6 sm:p-8 overflow-y-auto space-y-6">
+          {/* Title & Subtitle */}
+          <div>
+            <h3 className="text-2xl sm:text-3xl font-bold font-outfit text-white mb-2">
+              {project.title}
+            </h3>
+            <p className="text-sm sm:text-base text-slate-300">
+              {project.subtitle}
             </p>
+          </div>
 
-            {/* Deliverables / Scope */}
+          {/* Project Image Banner if exists */}
+          {project.image && (
+            <div className="w-full h-56 sm:h-72 rounded-xl overflow-hidden border border-slate-800/80 relative">
+              <img
+                src={project.image}
+                alt={project.title}
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            </div>
+          )}
+
+          {/* Problem & Approach */}
+          <div className="space-y-4">
             <div>
-              <h4 className="text-xs font-mono text-slate-400 uppercase tracking-wider mb-3">
-                Included Features &amp; Architecture
+              <h4 className="text-xs font-mono uppercase tracking-wider text-blue-400 mb-1.5">
+                Overview & Purpose
               </h4>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {demo.deliverables.map((item) => (
-                  <div
-                    key={item}
-                    className="p-3 rounded-xl bg-white/[0.03] border border-white/5 text-xs text-slate-300 flex items-center gap-2"
-                  >
-                    <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                    <span className="truncate">{item}</span>
-                  </div>
-                ))}
-              </div>
+              <p className="text-sm text-slate-300 leading-relaxed">
+                {project.description}
+              </p>
             </div>
 
-            {/* Bottom prompt */}
-            <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <span className="text-xs text-slate-400">
-                Interested in an AI voice agent and tailored website for this sector?
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onContactClick(demo.title);
-                }}
-                className="text-xs font-semibold text-[#4F8CFF] hover:text-blue-300 flex items-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <span>Request a quote for your business</span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              </button>
+            <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800/70">
+              <h4 className="text-xs font-mono uppercase tracking-wider text-slate-400 mb-1">
+                The Practical Problem Solved
+              </h4>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                {project.problemSolved}
+              </p>
             </div>
           </div>
-        </motion.div>
+
+          {/* What I Learned */}
+          <div>
+            <h4 className="text-xs font-mono uppercase tracking-wider text-blue-400 mb-3 flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5" />
+              <span>What I Learned While Building</span>
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {project.whatILearned.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-start gap-2 p-3 rounded-lg bg-slate-900/30 border border-slate-800/50 text-xs text-slate-300"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Code Snippet if present */}
+          {project.codeSnippet && (
+            <div>
+              <h4 className="text-xs font-mono uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
+                <Code2 className="w-3.5 h-3.5 text-blue-400" />
+                <span>Code Excerpt ({project.codeSnippet.language})</span>
+              </h4>
+              <div className="p-4 rounded-xl bg-[#060810] border border-slate-800 overflow-x-auto text-xs font-mono text-slate-300">
+                <pre>
+                  <code>{project.codeSnippet.code}</code>
+                </pre>
+              </div>
+            </div>
+          )}
+
+          {/* Tech Stack Unboxed Tags */}
+          <div className="pt-2 border-t border-slate-800/80">
+            <p className="text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-2">
+              Technologies & Tools
+            </p>
+            <p className="text-xs text-slate-300">
+              {project.techStack.map((tech, idx) => (
+                <span key={tech}>
+                  {tech}
+                  {idx < project.techStack.length - 1 && (
+                    <span className="text-slate-600 mx-2" aria-hidden="true">·</span>
+                  )}
+                </span>
+              ))}
+            </p>
+          </div>
+        </div>
+
+        {/* Modal Footer */}
+        <div className="px-6 py-4 bg-slate-950/80 border-t border-slate-800 flex items-center justify-between shrink-0">
+          <span className="text-xs font-mono text-slate-500">
+            Personal Builder Project · Ali Abbas
+          </span>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-xs font-medium text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
+          >
+            Close
+          </button>
+        </div>
       </div>
-    </AnimatePresence>
+    </div>
   );
 }
