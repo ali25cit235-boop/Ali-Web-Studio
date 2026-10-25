@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { Cpu, Terminal, Wrench, Heart, Compass, Lightbulb } from 'lucide-react';
 import { portfolioConfig } from '../data/portfolioData';
 
@@ -44,9 +45,15 @@ export default function AboutSection() {
         {/* Story Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Main Prose Card */}
-          <div className="lg:col-span-7 space-y-6 bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 sm:p-8 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="lg:col-span-7 space-y-6 bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 sm:p-8 backdrop-blur-sm"
+          >
             <h3 className="text-xl font-semibold text-white font-outfit">
-              From Hardware Screwdrivers to Kotlin & Code
+              From Hardware Screwdrivers to Systems Programming & Kotlin
             </h3>
 
             <div className="space-y-4 text-slate-300 text-sm sm:text-base leading-relaxed">
@@ -62,25 +69,30 @@ export default function AboutSection() {
               </div>
               <span aria-hidden="true">·</span>
               <div className="flex items-center gap-1.5">
-                <Terminal className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Kotlin · Python · Web</span>
+                <Terminal className="w-3.5 h-3.5 text-emerald-400" />
+                <span>NetShield · Python · Kotlin</span>
               </div>
               <span aria-hidden="true">·</span>
               <div className="flex items-center gap-1.5">
                 <Heart className="w-3.5 h-3.5 text-rose-400" />
-                <span>Tech Enthusiast</span>
+                <span>Systems & Tech Enthusiast</span>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Right Column: 3 Learning Pillars */}
           <div className="lg:col-span-5 space-y-4">
             {pillars.map((pillar, idx) => {
               const Icon = pillar.icon;
               return (
-                <div
+                <motion.div
                   key={idx}
-                  className="p-5 rounded-xl bg-slate-900/30 border border-slate-800/60 hover:border-slate-700/80 transition-colors"
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: idx * 0.1 }}
+                  whileHover={{ scale: 1.02 }}
+                  className="p-5 rounded-xl bg-slate-900/30 border border-slate-800/60 hover:border-slate-700/80 transition-all cursor-default"
                 >
                   <div className="flex items-center gap-3 mb-2">
                     <div className="p-2 rounded-lg bg-blue-950/60 text-blue-400 border border-blue-800/30">
@@ -89,17 +101,23 @@ export default function AboutSection() {
                     <h4 className="text-sm font-semibold text-white font-outfit">{pillar.title}</h4>
                   </div>
                   <p className="text-xs text-slate-400 leading-relaxed pl-11">{pillar.description}</p>
-                </div>
+                </motion.div>
               );
             })}
 
             {/* Quote Box */}
-            <div className="p-5 rounded-xl bg-gradient-to-br from-blue-950/20 to-indigo-950/20 border border-blue-900/30 text-xs text-slate-300 leading-relaxed italic">
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+              className="p-5 rounded-xl bg-gradient-to-br from-blue-950/20 to-indigo-950/20 border border-blue-900/30 text-xs text-slate-300 leading-relaxed italic"
+            >
               "You don't learn how an engine works just by reading the manual—you learn by opening the hood, seeing what's connected, and understanding why each part matters."
               <span className="block mt-2 not-italic font-mono text-[11px] text-blue-400 font-medium">
                 — Ali Abbas
               </span>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>

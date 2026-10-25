@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { Calendar, CheckCircle2, Milestone } from 'lucide-react';
 import { journeyMilestones } from '../data/portfolioData';
 
@@ -16,19 +17,26 @@ export default function JourneySection() {
             How I Got Here & What I'm Learning
           </h2>
           <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
-            From fixing desktop computers and diagnosing hardware issues to enrolling in CIT and developing native Android applications.
+            From fixing desktop computers and diagnosing hardware issues to enrolling in CIT, engineering NetShield, and developing native Android applications.
           </p>
         </div>
 
         {/* Timeline Layout */}
         <div className="relative border-l border-slate-800 ml-4 sm:ml-8 pl-6 sm:pl-10 space-y-12">
           {journeyMilestones.map((milestone, idx) => (
-            <div key={milestone.year} className="relative group">
+            <motion.div
+              key={milestone.year}
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.45, delay: idx * 0.1 }}
+              className="relative group"
+            >
               {/* Timeline marker node */}
               <div className="absolute -left-[31px] sm:-left-[47px] top-1.5 w-4 h-4 rounded-full bg-[#070912] border-2 border-blue-500 group-hover:scale-125 group-hover:bg-blue-500 transition-all shadow-sm shadow-blue-500/50" />
 
               {/* Milestone Card */}
-              <div className="p-6 sm:p-7 rounded-2xl bg-slate-900/40 border border-slate-800/80 group-hover:border-slate-700 transition-all">
+              <div className="p-6 sm:p-7 rounded-2xl bg-slate-900/40 border border-slate-800/80 group-hover:border-slate-700 transition-all hover:shadow-lg hover:shadow-black/20">
                 {/* Year & Period Header */}
                 <div className="flex flex-wrap items-center gap-3 text-xs font-mono mb-2">
                   <span className="font-semibold text-blue-400">{milestone.year}</span>
@@ -67,7 +75,7 @@ export default function JourneySection() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

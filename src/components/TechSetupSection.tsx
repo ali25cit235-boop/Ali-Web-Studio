@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { Monitor, Laptop, Wrench, Terminal, Cpu, HardDrive } from 'lucide-react';
 import { techSetup } from '../data/portfolioData';
 
@@ -20,10 +21,16 @@ export default function TechSetupSection() {
           </p>
         </div>
 
-        {/* 2-Column Grid: Hardware & Software */}
+        {/* 2-Column Grid: Hardware & Software with Motion */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Hardware Column */}
-          <div className="rounded-2xl p-6 sm:p-8 bg-slate-900/40 border border-slate-800/80">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4 }}
+            className="rounded-2xl p-6 sm:p-8 bg-slate-900/40 border border-slate-800/80"
+          >
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2.5 rounded-xl bg-blue-950/60 text-blue-400 border border-blue-800/40">
                 <Cpu className="w-5 h-5" />
@@ -38,24 +45,30 @@ export default function TechSetupSection() {
               {techSetup.hardware.map((item, idx) => (
                 <div
                   key={idx}
-                  className="p-4 rounded-xl bg-slate-950/40 border border-slate-800/60 space-y-1"
+                  className="p-4 rounded-xl bg-slate-950/40 border border-slate-800/60 space-y-1 hover:border-slate-700/80 transition-colors"
                 >
                   <p className="text-xs font-mono font-medium text-blue-300">{item.title}</p>
                   <p className="text-xs text-slate-300 leading-relaxed">{item.specs}</p>
                 </div>
               ))}
             </div>
-          </div>
+          </motion.div>
 
           {/* Software Column */}
-          <div className="rounded-2xl p-6 sm:p-8 bg-slate-900/40 border border-slate-800/80">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: 0.15 }}
+            className="rounded-2xl p-6 sm:p-8 bg-slate-900/40 border border-slate-800/80"
+          >
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2.5 rounded-xl bg-indigo-950/60 text-indigo-400 border border-indigo-800/40">
                 <Terminal className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="text-lg font-bold font-outfit text-white">Software, IDEs & OS</h3>
-                <p className="text-xs text-slate-400">Tooling for Android, Python, and Web development</p>
+                <p className="text-xs text-slate-400">Tooling for Android, Python, and Systems engineering</p>
               </div>
             </div>
 
@@ -63,14 +76,14 @@ export default function TechSetupSection() {
               {techSetup.software.map((item, idx) => (
                 <div
                   key={idx}
-                  className="p-4 rounded-xl bg-slate-950/40 border border-slate-800/60 space-y-1"
+                  className="p-4 rounded-xl bg-slate-950/40 border border-slate-800/60 space-y-1 hover:border-slate-700/80 transition-colors"
                 >
                   <p className="text-xs font-mono font-medium text-indigo-300">{item.title}</p>
                   <p className="text-xs text-slate-300 leading-relaxed">{item.specs}</p>
                 </div>
               ))}
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

@@ -1,9 +1,11 @@
 import CustomCursor from './components/CustomCursor';
+import MotionBackground from './components/MotionBackground';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import AboutSection from './components/AboutSection';
 import FocusAreas from './components/FocusAreas';
 import ProjectsSection from './components/ProjectsSection';
+import ResumeSection from './components/ResumeSection';
 import JourneySection from './components/JourneySection';
 import TechSetupSection from './components/TechSetupSection';
 import ContactSection from './components/ContactSection';
@@ -38,6 +40,9 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#06080F] text-slate-200 selection:bg-blue-600/30 selection:text-white font-sans relative antialiased overflow-x-hidden">
+      {/* Dynamic ambient motion background */}
+      <MotionBackground />
+
       {/* Subtle desktop cursor enhancement */}
       <CustomCursor />
 
@@ -60,6 +65,9 @@ export default function App() {
 
         {/* Projects & Experiments Showcase */}
         <ProjectsSection />
+
+        {/* Official Credentials, Education & Shop Experience (Resume) */}
+        <ResumeSection />
 
         {/* Learning Journey Timeline */}
         <JourneySection />

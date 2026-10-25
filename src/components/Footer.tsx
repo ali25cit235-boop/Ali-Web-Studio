@@ -38,6 +38,14 @@ export default function Footer() {
               Journey
             </a>
             <a
+              href={portfolioConfig.contact.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors"
+            >
+              GitHub
+            </a>
+            <a
               href={`https://wa.me/${portfolioConfig.contact.whatsappCleanNumber}?text=${encodeURIComponent(portfolioConfig.contact.whatsappMessage)}`}
               target="_blank"
               rel="noopener noreferrer"

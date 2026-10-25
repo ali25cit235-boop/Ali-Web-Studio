@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ArrowDown, MessageCircle, Copy, Check, Terminal, Sparkles, MapPin } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ArrowDown, MessageCircle, Copy, Check, Terminal, Sparkles, MapPin, Shield, FileText } from 'lucide-react';
 import { portfolioConfig } from '../data/portfolioData';
 
 interface HeroProps {
@@ -29,7 +30,12 @@ export default function Hero({ onExploreClick, onConnectClick }: HeroProps) {
         {/* Top Split Container */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
           {/* Left Column: Typographic & Brand Hierarchy */}
-          <div className="lg:col-span-6 space-y-6">
+          <motion.div
+            initial={{ opacity: 0, x: -24 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.55, ease: 'easeOut' }}
+            className="lg:col-span-6 space-y-6"
+          >
             {/* Status & Intro Label */}
             <div className="flex flex-wrap items-center gap-3">
               <span className="text-xs font-mono font-medium tracking-wider uppercase text-blue-400">
@@ -56,36 +62,54 @@ export default function Hero({ onExploreClick, onConnectClick }: HeroProps) {
               {portfolioConfig.heroDescription}
             </p>
 
-            {/* Location & Timezone marker */}
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              <MapPin className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-              <span>Based in Pakistan</span>
+            {/* Location & Academic marker */}
+            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+              <div className="flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                <span>Kamalia, Punjab, Pakistan</span>
+              </div>
               <span aria-hidden="true">·</span>
-              <span>CIT Student (Computer Information Technology)</span>
+              <span>DAE CIT · GCT Kamalia (87.5% Result)</span>
+              <span aria-hidden="true">·</span>
+              <span className="text-emerald-400 font-mono">42 WPM Typing</span>
             </div>
 
-            {/* Two Primary CTAs */}
-            <div className="flex flex-wrap items-center gap-4 pt-2">
+            {/* Primary Action Buttons */}
+            <div className="flex flex-wrap items-center gap-3 pt-2">
               <button
                 onClick={onExploreClick}
-                className="inline-flex items-center gap-2 px-6 py-3.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 active:bg-blue-700 rounded-xl shadow-lg shadow-blue-600/25 transition-all cursor-pointer whitespace-nowrap group"
+                className="inline-flex items-center gap-2 px-5 py-3.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 active:bg-blue-700 rounded-xl shadow-lg shadow-blue-600/25 transition-all cursor-pointer whitespace-nowrap group"
               >
                 <span>Explore My Journey</span>
                 <ArrowDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
               </button>
 
+              <a
+                href={portfolioConfig.resumePdfUrl}
+                download="Ali_Abbas_Resume.pdf"
+                className="inline-flex items-center gap-2 px-5 py-3.5 text-sm font-semibold text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition-all cursor-pointer whitespace-nowrap"
+              >
+                <FileText className="w-4 h-4 text-blue-400" />
+                <span>Download Resume (PDF)</span>
+              </a>
+
               <button
                 onClick={onConnectClick}
-                className="inline-flex items-center gap-2 px-6 py-3.5 text-sm font-semibold text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-xl transition-all cursor-pointer whitespace-nowrap"
+                className="inline-flex items-center gap-2 px-5 py-3.5 text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl transition-all cursor-pointer whitespace-nowrap"
               >
                 <MessageCircle className="w-4 h-4 text-emerald-400" />
-                <span>Connect With Me</span>
+                <span>Connect</span>
               </button>
             </div>
-          </div>
+          </motion.div>
 
           {/* Right Column: Hero Visual & Interactive Code Terminal */}
-          <div className="lg:col-span-6 space-y-4">
+          <motion.div
+            initial={{ opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.55, ease: 'easeOut', delay: 0.1 }}
+            className="lg:col-span-6 space-y-4"
+          >
             {/* Interactive Terminal Window */}
             <div className="rounded-2xl border border-slate-800 bg-[#0A0D18]/90 backdrop-blur-md shadow-2xl overflow-hidden">
               {/* Window Header */}
@@ -172,7 +196,7 @@ export default function Hero({ onExploreClick, onConnectClick }: HeroProps) {
                 <p className="text-slate-400 text-[11px]">Dual-monitor setup · Android Studio · VS Code · Hardware bench</p>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
 
         {/* 4-Item Milestone Strip Below Hero Split */}

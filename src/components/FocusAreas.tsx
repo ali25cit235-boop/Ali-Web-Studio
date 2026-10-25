@@ -1,4 +1,5 @@
-import { Smartphone, Globe, Terminal, Cpu, Sparkles, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Shield, Smartphone, Globe, Terminal, Cpu, Sparkles, ArrowRight } from 'lucide-react';
 import { focusAreas } from '../data/portfolioData';
 
 interface FocusAreasProps {
@@ -8,6 +9,8 @@ interface FocusAreasProps {
 export default function FocusAreas({ onSelectCategory }: FocusAreasProps) {
   const getIcon = (name: string) => {
     switch (name) {
+      case 'Shield':
+        return <Shield className="w-5 h-5 text-emerald-400" />;
       case 'Smartphone':
         return <Smartphone className="w-5 h-5 text-blue-400" />;
       case 'Globe':
@@ -31,27 +34,32 @@ export default function FocusAreas({ onSelectCategory }: FocusAreasProps) {
           <div className="flex items-center gap-2 text-xs font-mono font-medium tracking-wider uppercase text-blue-400">
             <span>WHAT I DO & EXPLORE</span>
             <span aria-hidden="true">·</span>
-            <span>TECHNICAL INTERESTS</span>
+            <span>TECHNICAL DOMAINS</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-bold font-outfit text-white tracking-tight">
             Areas of Interest & Learning Focus
           </h2>
           <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
-            I divide my time between formal CIT coursework, building native Android apps with Kotlin, writing automation scripts in Python, and diagnosing PC hardware.
+            I divide my time between network security utilities (like NetShield), building native Android apps with Kotlin, writing automation scripts in Python, and PC systems maintenance.
           </p>
         </div>
 
-        {/* Bento Grid */}
+        {/* Bento Grid with Framer Motion Stagger */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {focusAreas.map((area) => (
-            <div
+          {focusAreas.map((area, idx) => (
+            <motion.div
               key={area.id}
-              className="rounded-2xl p-6 bg-slate-900/40 border border-slate-800/80 hover:border-slate-700 hover:bg-slate-900/60 transition-all flex flex-col justify-between group"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: idx * 0.08 }}
+              whileHover={{ y: -4 }}
+              className="rounded-2xl p-6 bg-slate-900/40 border border-slate-800/80 hover:border-slate-700 hover:bg-slate-900/60 transition-all flex flex-col justify-between group shadow-sm hover:shadow-xl hover:shadow-black/30"
             >
               <div>
                 {/* Header with Icon & Unboxed Status */}
                 <div className="flex items-start justify-between gap-4 mb-4">
-                  <div className="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 group-hover:scale-105 transition-transform">
+                  <div className="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 group-hover:scale-110 transition-transform">
                     {getIcon(area.iconName)}
                   </div>
                   <span className="text-[11px] font-mono text-slate-400">{area.level}</span>
@@ -78,10 +86,10 @@ export default function FocusAreas({ onSelectCategory }: FocusAreasProps) {
                     Key Topics & Skills
                   </p>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    {area.skills.map((skill, idx) => (
+                    {area.skills.map((skill, sIdx) => (
                       <span key={skill}>
                         {skill}
-                        {idx < area.skills.length - 1 && <span className="text-slate-600 mx-1.5" aria-hidden="true">·</span>}
+                        {sIdx < area.skills.length - 1 && <span className="text-slate-600 mx-1.5" aria-hidden="true">·</span>}
                       </span>
                     ))}
                   </p>
@@ -93,7 +101,7 @@ export default function FocusAreas({ onSelectCategory }: FocusAreasProps) {
                   {area.currentFocus}
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

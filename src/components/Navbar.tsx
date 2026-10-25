@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowUpRight, Menu, X } from 'lucide-react';
+import { ArrowUpRight, Menu, X, FileText } from 'lucide-react';
 import { portfolioConfig } from '../data/portfolioData';
 
 interface NavbarProps {
@@ -22,8 +22,8 @@ export default function Navbar({ onConnectClick }: NavbarProps) {
     { label: 'About', href: '#about' },
     { label: 'Focus Areas', href: '#focus-areas' },
     { label: 'Projects', href: '#projects' },
+    { label: 'Resume', href: '#resume' },
     { label: 'Journey', href: '#journey' },
-    { label: 'Tech Setup', href: '#tech-setup' },
   ];
 
   const handleLinkClick = (href: string) => {
@@ -77,8 +77,17 @@ export default function Navbar({ onConnectClick }: NavbarProps) {
             ))}
           </nav>
 
-          {/* Zone 3: 1 primary action */}
+          {/* Zone 3: Actions */}
           <div className="hidden md:flex items-center gap-3 shrink-0">
+            <a
+              href={portfolioConfig.resumePdfUrl}
+              download="Ali_Abbas_Resume.pdf"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 rounded-lg transition-all whitespace-nowrap shrink-0 cursor-pointer"
+            >
+              <FileText className="w-3.5 h-3.5 text-blue-400" />
+              <span>Resume (PDF)</span>
+            </a>
+
             <button
               onClick={onConnectClick}
               className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 active:bg-blue-700 rounded-lg shadow-sm shadow-blue-500/20 hover:shadow-blue-500/40 transition-all whitespace-nowrap shrink-0 cursor-pointer"
@@ -114,12 +123,22 @@ export default function Navbar({ onConnectClick }: NavbarProps) {
                 {link.label}
               </button>
             ))}
+
+            <a
+              href={portfolioConfig.resumePdfUrl}
+              download="Ali_Abbas_Resume.pdf"
+              className="w-full mt-2 py-2.5 px-4 text-center text-xs font-semibold text-slate-200 hover:text-white bg-slate-800/90 hover:bg-slate-700 border border-slate-700 rounded-lg flex items-center justify-center gap-2"
+            >
+              <FileText className="w-4 h-4 text-blue-400" />
+              <span>Download Resume (PDF)</span>
+            </a>
+
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
                 onConnectClick();
               }}
-              className="w-full mt-3 py-3 px-4 text-center text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg shadow-md transition-colors"
+              className="w-full py-3 px-4 text-center text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg shadow-md transition-colors"
             >
               Connect With Me
             </button>
